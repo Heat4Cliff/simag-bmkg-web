@@ -30,19 +30,24 @@ export async function GET(request: Request) {
       where: whereClause,
       include: {
         user: { select: { nama: true, email: true, username: true } },
-        tempatMagang: { select: { namaPerusahaan: true } }
+        tempatMagang: { select: { namaInstansi: true } }
       },
       orderBy: { user: { nama: 'asc' } }
     });
 
+    const now = new Date();
     const data = mahasiswa.map(m => ({
       id: m.id,
       userId: m.userId,
       nama: m.user.nama,
       nim: m.nim,
-      universitas: m.universitas,
-      tempatMagang: m.tempatMagang?.namaPerusahaan || 'Belum ditempatkan',
-      status: m.statusMagang
+      universitas: m.programStudi || '-',
+      tempatMagang: m.tempatMagang?.namaInstansi || 'Belum ditempatkan',
+      status: !m.tempatMagangId
+        ? 'BELUM'
+        : m.periodeSelesai && m.periodeSelesai < now
+          ? 'SELESAI'
+          : 'AKTIF'
     }));
 
     return buildCorsResponse({
