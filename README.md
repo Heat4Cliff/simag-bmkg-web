@@ -22,9 +22,8 @@
 4. [Teknologi & Dependensi](#-teknologi--dependensi)
 5. [Persyaratan Sistem (Prerequisites)](#-persyaratan-sistem-prerequisites)
 6. [Panduan Instalasi & Penggunaan](#-panduan-instalasi--penggunaan)
-7. [Variabel Lingkungan (.env)](#-variabel-lingkungan-env)
-8. [Struktur Folder](#-struktur-folder)
-9. [Script Perintah (NPM Scripts)](#-script-perintah-npm-scripts)
+7. [Struktur Folder](#-struktur-folder)
+8. [Script Perintah (NPM Scripts)](#-script-perintah-npm-scripts)
 
 ---
 
@@ -277,24 +276,6 @@ Buka peramban di [http://localhost:3200](http://localhost:3200) atau sesuai port
 ```bash
 npm run build
 npm run start
-```
-
----
-
-## 🔑 Variabel Lingkungan (.env)
-
-| Variabel | Penjelasan | Contoh Nilai |
-|---|---|---|
-| `DATABASE_URL` | URL koneksi ke PostgreSQL | `postgresql://user:pass@127.0.0.1:5432/simag_bmkg` |
-| `NEXTAUTH_URL` | URL dasar aplikasi untuk NextAuth | `http://localhost:3200` atau URL domain Anda |
-| `AUTH_URL` | Alias URL autentikasi NextAuth v5 | `http://localhost:3200` |
-| `NEXTAUTH_SECRET` | Secret key enkripsi cookie sesi | *String acak minimal 32 karakter* |
-| `AUTH_SECRET` | Secret key otentikasi NextAuth | *String acak* |
-| `TZ` | Timezone aplikasi | `Asia/Jakarta` |
-| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Public key untuk Web Push | *Generated VAPID Key* |
-| `VAPID_PRIVATE_KEY` | Private key untuk Web Push | *Generated VAPID Key* |
-| `VAPID_SUBJECT` | Subjek email pengirim push | `mailto:admin@domain.com` |
-
 ---
 
 ## 📁 Struktur Folder
