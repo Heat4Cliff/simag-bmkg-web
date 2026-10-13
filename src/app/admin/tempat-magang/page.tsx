@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 import TempatMagangContent from "@/components/admin/TempatMagangContent";
 import { Metadata } from "next";
 
@@ -16,5 +17,9 @@ export default async function TempatMagangPage() {
     redirect("/dashboard");
   }
 
-  return <TempatMagangContent />;
+  return (
+    <DashboardLayout>
+      <TempatMagangContent />
+    </DashboardLayout>
+  );
 }
