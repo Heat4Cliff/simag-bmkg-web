@@ -39,3 +39,24 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# build outputs and media
+*.apk
+*.idsig
+*.zip
+/backups/
+/scratch/
+/stitch_interna_unugha_internship_app/
+public/uploads/
+
+# temporary test and migration scripts
+check-users.js
+clear-dummy.ts
+create-db.js
+fix-*.js
+fix-*.ts
+refactor.js
+run-seed.js
+test-*.js
+test-*.ts
+update-status.js

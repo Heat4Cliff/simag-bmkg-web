@@ -1,0 +1,35 @@
+.fc {
+  font-family: inherit;
+}
+.fc-toolbar-title {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: #1f2937;
+}
+.fc-button-primary {
+  background-color: #1E8A3C !important;
+  border-color: #1E8A3C !important;
+  border-radius: 0.5rem !important;
+  text-transform: capitalize;
+  font-weight: 600 !important;
+}
+.fc-button-primary:hover {
+  background-color: #0d5cc5 !important;
+}
+.fc-button-active {
+  background-color: #083b7c !important;
+}
+.fc-daygrid-day-number {
+  color: #4b5563;
+  font-weight: 500;
+}
+.fc-event {
+  border-radius: 0.375rem;
+  padding: 2px 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: none !important;
+}
+.fc-day-today {
+  background-color: #eff6ff !important;
+}

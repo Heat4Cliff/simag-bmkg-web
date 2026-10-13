@@ -1,0 +1,290 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  SUPERADMIN
+  KAPRODI
+  DPL
+  MENTOR_INSTANSI
+  MAHASISWA
+}
+
+enum StatusAbsensi {
+  HADIR
+  TELAT
+  IZIN
+  SAKIT
+  ALPA
+}
+
+enum StatusLaporan {
+  DRAFT
+  TERKIRIM
+  DIREVIEW
+  DISETUJUI
+  REVISI
+  DITOLAK
+}
+
+enum StatusModul {
+  DRAFT
+  TERKIRIM
+  DIREVIEW
+  DISETUJUI
+  REVISI
+}
+
+enum TipeJadwal {
+  PRIBADI
+  BIMBINGAN
+  INSTANSI
+}
+
+model User {
+  id           String   @id @default(cuid())
+  nama         String
+  email        String   @unique
+  username     String?  @unique
+  passwordHash String   @map("password_hash")
+  role         Role     @default(MAHASISWA)
+  fotoProfil   String?  @map("foto_profil")
+  statusAktif  Boolean  @default(true) @map("status_aktif")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  mahasiswaProfile  MahasiswaProfile?
+  dplProfile        DplProfile?
+  mentorProfile     MentorProfile?
+  absensi           Absensi[]
+  laporanHarian     LaporanHarian[]
+  modulPraktikum    ModulPraktikum[]
+  jadwalKegiatan    JadwalKegiatan[]
+  notifikasi        Notifikasi[]
+  pushSubscriptions PushSubscription[]
+  auditLog          AuditLog[]
+  sessions          Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model TempatMagang {
+  id                 String   @id @default(cuid())
+  namaInstansi       String   @map("nama_instansi")
+  alamat             String?
+  latitudeKantor     Float?   @map("latitude_kantor")
+  longitudeKantor    Float?   @map("longitude_kantor")
+  radiusAbsensiMeter Float?   @map("radius_absensi_meter") @default(500)
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  mahasiswas         MahasiswaProfile[]
+
+  @@map("tempat_magang")
+}
+
+model MahasiswaProfile {
+  id            String    @id @default(cuid())
+  userId        String    @unique @map("user_id")
+  nim           String?
+  programStudi  String?   @map("program_studi")
+  periodeMulai  DateTime? @map("periode_mulai")
+  periodeSelesai DateTime? @map("periode_selesai")
+  
+  dplId         String?   @map("dpl_id")
+  mentorId      String?   @map("mentor_id")
+  tempatMagangId String?  @map("tempat_magang_id")
+  
+  noHp          String?   @map("no_hp")
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dpl           DplProfile?    @relation(fields: [dplId], references: [id])
+  mentor        MentorProfile? @relation(fields: [mentorId], references: [id])
+  tempatMagang  TempatMagang?  @relation(fields: [tempatMagangId], references: [id])
+
+  @@map("mahasiswa_profiles")
+}
+
+model DplProfile {
+  id     String  @id @default(cuid())
+  userId String  @unique @map("user_id")
+  nip    String?
+  noHp   String? @map("no_hp")
+
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mahasiswas MahasiswaProfile[]
+
+  @@map("dpl_profiles")
+}
+
+model MentorProfile {
+  id      String  @id @default(cuid())
+  userId  String  @unique @map("user_id")
+  jabatan String?
+  noHp    String? @map("no_hp")
+
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mahasiswas MahasiswaProfile[]
+
+  @@map("mentor_profiles")
+}
+
+model Absensi {
+  id                    String        @id @default(cuid())
+  userId                String        @map("user_id")
+  tanggal               DateTime      @db.Date
+  jamMasuk              DateTime?     @map("jam_masuk")
+  jamPulang             DateTime?     @map("jam_pulang")
+  fotoMasuk             String?       @map("foto_masuk")
+  fotoPulang            String?       @map("foto_pulang")
+  verifikasiBiometrik   Boolean       @default(false) @map("verifikasi_biometrik")
+  status                StatusAbsensi @default(HADIR)
+  latitude              Float?
+  longitude             Float?
+  jarakDariKantorMeter  Float?        @map("jarak_dari_kantor_meter")
+  lokasiValid           Boolean       @default(false) @map("lokasi_valid")
+  keterangan            String?
+  lampiranUrl           String?       @map("lampiran_url")
+  createdAt             DateTime      @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tanggal])
+  @@map("absensi")
+}
+
+model LaporanHarian {
+  id               String        @id @default(cuid())
+  userId           String        @map("user_id")
+  tanggal          DateTime      @db.Date
+  judul            String
+  deskripsi        String        @db.Text
+  kendala          String?       @db.Text
+  lampiran         String?
+  status           StatusLaporan @default(DRAFT)
+  catatanPembimbing String?      @db.Text @map("catatan_pembimbing")
+  reviewedBy       String?       @map("reviewed_by")
+  reviewedAt       DateTime?     @map("reviewed_at")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("laporan_harian")
+}
+
+model KategoriModul {
+  id            String         @id @default(cuid())
+  namaKategori  String         @map("nama_kategori")
+  deskripsi     String?
+  modulPraktikum ModulPraktikum[]
+
+  @@map("kategori_modul")
+}
+
+model ModulPraktikum {
+  id           String      @id @default(cuid())
+  userId       String      @map("user_id")
+  judul        String
+  kategoriId   String      @map("kategori_id")
+  konten       String      @db.Text
+  lampiran     String?
+  statusReview StatusModul @default(DRAFT) @map("status_review")
+  catatanReview String?    @db.Text @map("catatan_review")
+  reviewedBy   String?     @map("reviewed_by")
+  reviewedAt   DateTime?   @map("reviewed_at")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kategori KategoriModul @relation(fields: [kategoriId], references: [id])
+
+  @@map("modul_praktikum")
+}
+
+model JadwalKegiatan {
+  id          String     @id @default(cuid())
+  userId      String     @map("user_id")
+  judul       String
+  deskripsi   String?    @db.Text
+  tanggal     DateTime   @db.Date
+  jam         String?
+  tipe        TipeJadwal @default(PRIBADI)
+  visibility  String     @default("PRIVATE")
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("jadwal_kegiatan")
+}
+
+model Notifikasi {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  judul     String
+  pesan     String   @db.Text
+  dibaca    Boolean  @default(false)
+  link      String?
+  dibuatPada DateTime @default(now()) @map("dibuat_pada")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifikasi")
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("push_subscriptions")
+}
+
+model AuditLog {
+  id      String   @id @default(cuid())
+  userId  String   @map("user_id")
+  aksi    String
+  entitas String
+  waktu   DateTime @default(now())
+  detail  String?  @db.Text
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("audit_log")
+}
+
+model KampusSetting {
+  id              String  @id @default(cuid())
+  logo            String?
+  namaKampus      String  @map("nama_kampus") @default("Universitas Nahdlatul Ulama Al Ghazali")
+  alamat          String?
+  kontak          String?
+  warnaPrimary    String  @map("warna_primary") @default("#097a3a")
+  warnaSecondary  String  @map("warna_secondary") @default("#f1c40f")
+
+  @@map("kampus_setting")
+}

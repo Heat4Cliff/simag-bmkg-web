@@ -1,26 +1,63 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --unugha-blue: #1e8a3c;
+  --unugha-blue-light: #26a64b;
+  --unugha-green: #1e8a3c;
+  --unugha-gray: #6b7280;
+  --unugha-bg: #f7f9fc;
 }
 
 @theme inline {
+  --color-unugha-blue: #1e8a3c;
+  --color-unugha-blue-light: #26a64b;
+  --color-unugha-green: #1e8a3c;
+  --color-unugha-gray: #6b7280;
+  --color-unugha-bg: #f7f9fc;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #f7f9fc;
+  color: #111827;
+  font-family: var(--font-sans, system-ui, sans-serif);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Sidebar active item */
+.sidebar-item-active {
+  background-color: #eff6ff;
+  color: #1e8a3c;
+  border-left: 3px solid #1e8a3c;
+  font-weight: 600;
+}
+
+/* Card hover */
+.card-hover {
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.card-hover:hover {
+  box-shadow: 0 8px 24px rgba(11, 78, 162, 0.1);
+  transform: translateY(-1px);
 }
