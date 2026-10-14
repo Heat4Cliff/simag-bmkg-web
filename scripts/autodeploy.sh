@@ -82,9 +82,18 @@ fi
 log "Menjalankan npx prisma generate..."
 npx prisma generate
 
-# d. Sinkronkan skema database PostgreSQL
-log "Menyinkronkan skema database (npx prisma db push --accept-data-loss)..."
-npx prisma db push --accept-data-loss
+# d. Sinkronkan skema database PostgreSQL secara aman (Cegah Data Loss)
+if [ -d "prisma/migrations" ]; then
+  log "Menjalankan migrasi resmi (npx prisma migrate deploy)..."
+  npx prisma migrate deploy
+else
+  log "Menyinkronkan skema database secara aman (npx prisma db push)..."
+  # Menjalankan db push tanpa flag --accept-data-loss untuk melindungi data produksi
+  if ! npx prisma db push; then
+    log "PERINGATAN KEAMANAN: Terdeteksi perubahan skema yang berpotensi menghilangkan data!"
+    log "Deployment database ditahan demi melindungi data produksi."
+  fi
+fi
 
 # e. Jalankan build produksi Next.js
 log "Membangun proyek produksi (npm run build)..."
