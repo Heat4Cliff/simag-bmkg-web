@@ -98,7 +98,38 @@ export default function LaporanGlobalContent() {
                 <FileText className="w-5 h-5 text-[#1E8A3C]" /> Laporan Harian Terbaru
               </h2>
             </div>
-            <div className="overflow-x-auto">
+
+            {/* Mobile View (<md) */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {recentLaporan.length === 0 ? (
+                <div className="py-8 text-center text-gray-500 text-sm">Belum ada laporan harian.</div>
+              ) : (
+                recentLaporan.map(laporan => (
+                  <div key={laporan.id} className="p-4 space-y-2 bg-white">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="font-bold text-gray-900 text-sm">{laporan.nama}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{formatTanggalCompact(new Date(laporan.tanggal))}</p>
+                      </div>
+                      <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${getStatusLaporanColor(laporan.status)}`}>
+                        {getStatusLabel(laporan.status)}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-gray-700 font-medium line-clamp-2">{laporan.judul}</p>
+
+                    <div className="pt-1 flex justify-end">
+                      <Link href={`/laporan-harian/${laporan.id}`} className="text-[#1E8A3C] hover:underline font-semibold text-xs">
+                        Lihat Detail →
+                      </Link>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Desktop View (>=md) */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead className="bg-gray-50 border-b border-gray-100 text-gray-600 font-semibold">
                   <tr>

@@ -73,14 +73,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#F7F9FC]">
+    <div className="min-h-screen bg-[#F7F9FC] w-full max-w-full overflow-x-hidden">
       <Navbar notifCount={notifCount} />
 
       <Dock />
 
       {/* Main content */}
-      <main className="pt-16 pb-32 min-h-screen">
-        <div className={`w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 ${pathname === '/admin/penempatan' ? '' : 'max-w-[1400px]'}`}>
+      <main className="pt-16 pb-32 min-h-screen w-full max-w-full overflow-x-hidden">
+        <div className={`w-full max-w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 ${pathname === '/admin/penempatan' ? '' : 'max-w-[1400px]'}`}>
           {children}
         </div>
       </main>

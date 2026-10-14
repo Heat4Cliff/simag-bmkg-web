@@ -111,7 +111,90 @@ export default function PenempatanContent() {
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile View (<md) */}
+        <div className="md:hidden divide-y divide-gray-100">
+          {loading ? (
+            <div className="py-12 text-center">
+              <Loader2 className="w-6 h-6 animate-spin text-[#1E8A3C] mx-auto" />
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="py-12 text-center text-gray-500">Tidak ada mahasiswa.</div>
+          ) : (
+            filtered.map((m) => (
+              <div key={m.userId} className="p-4 space-y-3.5 bg-white">
+                <div>
+                  <p className="font-bold text-gray-900 text-sm">{m.nama}</p>
+                  <p className="text-xs text-gray-500">{m.email}</p>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 text-xs">
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold ${m.tempatMagangId ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
+                    <LinkIcon className="w-2.5 h-2.5" /> Tempat: {m.tempatMagangNama}
+                  </span>
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold ${m.dplId ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                    <LinkIcon className="w-2.5 h-2.5" /> DPL: {m.dplNama}
+                  </span>
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold ${m.mentorId ? 'bg-purple-50 text-purple-700' : 'bg-red-50 text-red-600'}`}>
+                    <LinkIcon className="w-2.5 h-2.5" /> Mentor: {m.mentorNama}
+                  </span>
+                </div>
+
+                <div className="space-y-2 pt-1 border-t border-gray-100">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-gray-600 mb-1">Tempat Magang</label>
+                    <select
+                      className="w-full border border-gray-200 rounded-lg px-2.5 py-2 text-xs focus:ring-2 focus:ring-[#1E8A3C] bg-white disabled:opacity-50"
+                      value={m.tempatMagangId || ""}
+                      onChange={(e) => handleAssign(m.userId, "tempatMagangId", e.target.value)}
+                      disabled={saving === m.userId}
+                    >
+                      <option value="">-- Pilih Tempat --</option>
+                      {tempatMagang.map(t => (
+                        <option key={t.id} value={t.id}>{t.nama}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-gray-600 mb-1">DPL Kampus</label>
+                    <select
+                      className="w-full border border-gray-200 rounded-lg px-2.5 py-2 text-xs focus:ring-2 focus:ring-[#1E8A3C] bg-white disabled:opacity-50"
+                      value={m.dplId || ""}
+                      onChange={(e) => handleAssign(m.userId, "dplProfileId", e.target.value)}
+                      disabled={saving === m.userId}
+                    >
+                      <option value="">-- Pilih DPL --</option>
+                      {dpl.map(p => (
+                        <option key={p.profileId} value={p.profileId}>{p.nama}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-gray-600 mb-1">Mentor Instansi</label>
+                    <div className="flex items-center gap-2">
+                      <select
+                        className="w-full border border-gray-200 rounded-lg px-2.5 py-2 text-xs focus:ring-2 focus:ring-[#1E8A3C] bg-white disabled:opacity-50"
+                        value={m.mentorId || ""}
+                        onChange={(e) => handleAssign(m.userId, "mentorProfileId", e.target.value)}
+                        disabled={saving === m.userId}
+                      >
+                        <option value="">-- Pilih Mentor --</option>
+                        {mentor.map(p => (
+                          <option key={p.profileId} value={p.profileId}>{p.nama}</option>
+                        ))}
+                      </select>
+                      {saving === m.userId && <Loader2 className="w-4 h-4 animate-spin text-[#1E8A3C] shrink-0" />}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop View (>=md) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-gray-50 border-b border-gray-100 text-gray-600 font-semibold">
               <tr>

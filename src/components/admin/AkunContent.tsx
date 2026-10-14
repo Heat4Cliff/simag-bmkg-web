@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Search, Users, MoreVertical, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Plus, Search, Users, MoreVertical, Edit2, Trash2, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface UserAccount {
@@ -150,9 +150,80 @@ export default function AkunContent() {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Content: Mobile Cards (<md) and Desktop Table (>=md) */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto min-h-[300px]">
+        {/* Mobile View (<md) */}
+        <div className="md:hidden divide-y divide-gray-100">
+          {loading ? (
+            <div className="py-12 text-center">
+              <Loader2 className="w-6 h-6 animate-spin text-[#1E8A3C] mx-auto" />
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="py-12 text-center text-gray-500">
+              <Users className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+              <p className="font-medium text-sm">Tidak ada akun ditemukan</p>
+            </div>
+          ) : (
+            filtered.map((user) => (
+              <div key={user.id} className="p-4 space-y-3 bg-white">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-gray-900 text-sm truncate">{user.nama}</p>
+                    <p className="text-xs text-gray-500 truncate mt-0.5">{user.email}</p>
+                  </div>
+                  {user.statusAktif ? (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded-full shrink-0">
+                      <CheckCircle2 className="w-3 h-3" /> Aktif
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-700 bg-red-50 px-2 py-0.5 rounded-full shrink-0">
+                      <XCircle className="w-3 h-3" /> Nonaktif
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <span className="bg-emerald-50 text-emerald-800 border border-emerald-100 px-2.5 py-0.5 rounded-md text-[11px] font-bold">
+                    {user.role}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => {
+                        setEditingId(user.id);
+                        setForm({
+                          nama: user.nama,
+                          email: user.email,
+                          password: "",
+                          role: user.role,
+                        });
+                        setShowModal(true);
+                      }}
+                      className="px-2.5 py-1 text-xs font-semibold text-[#1E8A3C] bg-green-50 rounded-lg hover:bg-green-100 transition-colors flex items-center gap-1"
+                    >
+                      <Edit2 className="w-3 h-3" /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleToggleStatus(user.id, user.statusAktif)}
+                      className="px-2.5 py-1 text-xs font-semibold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                    >
+                      {user.statusAktif ? "Nonaktifkan" : "Aktifkan"}
+                    </button>
+                    <button
+                      onClick={() => handleDelete(user.id)}
+                      className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Hapus"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop View (>=md) */}
+        <div className="hidden md:block overflow-x-auto min-h-[300px]">
           <table className="w-full text-left text-sm min-w-[640px]">
             <thead className="bg-gray-50 border-b border-gray-100 text-gray-600 font-semibold">
               <tr>
