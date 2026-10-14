@@ -206,9 +206,10 @@ export default function KalenderContent() {
           
           {/* Calendar Grid */}
           <div className="grid grid-cols-7 border-b border-gray-100 bg-gray-50">
-            {weekDays.map(day => (
-              <div key={day} className="py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border-r border-gray-100 last:border-r-0">
-                {day}
+            {weekDays.map((day, idx) => (
+              <div key={day} className="py-2.5 sm:py-3 text-center text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider border-r border-gray-100 last:border-r-0">
+                <span className="hidden sm:inline">{day}</span>
+                <span className="sm:hidden">{["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"][idx]}</span>
               </div>
             ))}
           </div>
@@ -274,7 +275,7 @@ export default function KalenderContent() {
 
       {/* Modal Detail Event */}
       {isDetailModalOpen && selectedEvent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
             <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
               <div className="flex items-center gap-3">
@@ -353,7 +354,7 @@ export default function KalenderContent() {
 
       {/* Modal Form Agenda */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
             <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
               <h3 className="font-bold text-gray-800">{formData.id ? "Edit Agenda" : "Tambah Agenda"}</h3>

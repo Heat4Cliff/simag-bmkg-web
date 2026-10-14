@@ -93,17 +93,17 @@ interface NavItem {
 const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-5 h-5" />, roles: ["SUPERADMIN", "DPL", "MENTOR_INSTANSI", "MAHASISWA"] },
   { href: "/absensi", label: "Absensi", icon: <ClipboardCheck className="w-5 h-5" />, roles: ["MAHASISWA"] },
-  { href: "/laporan-harian", label: "Laporan", icon: <FileText className="w-5 h-5" />, roles: ["MAHASISWA", "DPL"] },
-  { href: "/modul-praktikum", label: "Modul", icon: <BookOpen className="w-5 h-5" />, roles: ["MAHASISWA", "DPL"] },
-  { href: "/riwayat", label: "Riwayat", icon: <History className="w-5 h-5" />, roles: ["MAHASISWA", "DPL"], hideOnMobile: true },
+  { href: "/laporan-harian", label: "Laporan", icon: <FileText className="w-5 h-5" />, roles: ["MAHASISWA", "DPL", "MENTOR_INSTANSI"] },
+  { href: "/modul-praktikum", label: "Modul", icon: <BookOpen className="w-5 h-5" />, roles: ["MAHASISWA", "DPL", "MENTOR_INSTANSI"] },
+  { href: "/pembimbing/mahasiswa", label: "Mahasiswa", icon: <Users className="w-5 h-5" />, roles: ["DPL", "MENTOR_INSTANSI"] },
+  { href: "/riwayat", label: "Riwayat", icon: <History className="w-5 h-5" />, roles: ["MAHASISWA", "DPL", "MENTOR_INSTANSI"], hideOnMobile: true },
   { href: "/kalender", label: "Kalender", icon: <Calendar className="w-5 h-5" />, roles: ["SUPERADMIN", "DPL", "MENTOR_INSTANSI", "MAHASISWA"] },
-  { href: "/pembimbing/mahasiswa", label: "Mahasiswa", icon: <Users className="w-5 h-5" />, roles: ["DPL"] },
   { href: "/admin/akun", label: "Akun", icon: <Users className="w-5 h-5" />, roles: ["SUPERADMIN"] },
   { href: "/admin/penempatan", label: "Penempatan", icon: <Shield className="w-5 h-5" />, roles: ["SUPERADMIN"] },
   { href: "/admin/tempat-magang", label: "Tempat Magang", icon: <Building className="w-5 h-5" />, roles: ["SUPERADMIN"] },
   { href: "/admin/laporan-global", label: "Lap. Global", icon: <BarChart3 className="w-5 h-5" />, roles: ["SUPERADMIN"] },
   { href: "/profil", label: "Profil", icon: <User className="w-5 h-5" />, roles: ["SUPERADMIN", "DPL", "MENTOR_INSTANSI", "MAHASISWA"], hideOnMobile: true },
-  { href: "/pengaturan", label: "Pengaturan", icon: <Settings className="w-5 h-5" />, roles: ["SUPERADMIN", "DPL", "MENTOR_INSTANSI", "MAHASISWA"] },
+  { href: "/pengaturan", label: "Pengaturan", icon: <Settings className="w-5 h-5" />, roles: ["SUPERADMIN"] },
 ];
 
 export function Dock() {

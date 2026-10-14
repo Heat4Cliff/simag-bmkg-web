@@ -10,7 +10,6 @@ import {
   LogOut,
   User,
   Settings,
-  Grid3X3,
 } from "lucide-react";
 
 interface NavbarProps {
@@ -62,14 +61,6 @@ export default function Navbar({ notifCount = 0 }: NavbarProps) {
               </span>
             )}
           </Link>
-
-          {/* Grid App */}
-          <button
-            className="p-2 rounded-full hover:bg-white/10 transition-colors"
-            title="Menu Aplikasi"
-          >
-            <Grid3X3 className="w-5 h-5 text-white" />
-          </button>
 
           {/* Avatar + Dropdown */}
           <div className="relative">

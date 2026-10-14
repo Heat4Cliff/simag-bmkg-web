@@ -31,7 +31,6 @@ export async function POST(request: Request) {
     const file = formData.get("file") as File | null;
     const latStr = formData.get("latitude") as string;
     const lngStr = formData.get("longitude") as string;
-    const bypassStr = formData.get("bypass") as string; // from mobile shift or something, but usually false
 
     const hariIni = new Date();
     const startDate = new Date(hariIni.getFullYear(), hariIni.getMonth(), hariIni.getDate(), 0, 0, 0);
@@ -42,11 +41,11 @@ export async function POST(request: Request) {
       const buffer = Buffer.from(await file.arrayBuffer());
       const timestamp = Date.now();
       const namaFile = `absensi-${user.id}-${timestamp}${path.extname(file.name)}`;
-      const uploadDir = path.join(process.cwd(), "public", "uploads", "lampiran");
+      const uploadDir = path.join(process.cwd(), "public", "uploads", "absensi");
       await mkdir(uploadDir, { recursive: true });
       const filePath = path.join(uploadDir, namaFile);
       await writeFile(filePath, buffer);
-      lampiranUrl = `/uploads/lampiran/${namaFile}`;
+      lampiranUrl = `/uploads/absensi/${namaFile}`;
     }
 
     const absensiHariIni = await prisma.absensi.findFirst({
@@ -67,6 +66,7 @@ export async function POST(request: Request) {
           status: tipe === "izin" ? "IZIN" : "SAKIT",
           keterangan,
           lampiranUrl,
+          lokasiValid: true,
         },
       });
       return buildCorsResponse({ success: true, message: `Berhasil mengajukan ${tipe}`, data: absensiBaru });
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
 
     let targetLat = 0;
     let targetLng = 0;
-    let radius = 10000; // default large radius
+    let radius = 500;
 
     if (tempatMagangId) {
       const tempat = await prisma.tempatMagang.findUnique({ where: { id: tempatMagangId } });
@@ -100,7 +100,7 @@ export async function POST(request: Request) {
     }
 
     const distance = getDistance(latitude, longitude, targetLat, targetLng);
-    if (distance > radius && bypassStr !== "true") {
+    if (distance > radius) {
       return buildCorsResponse({ success: false, message: `Anda berada di luar radius kantor (${Math.round(distance)}m > ${radius}m)` }, 400);
     }
 
@@ -117,8 +117,11 @@ export async function POST(request: Request) {
           tanggal: new Date(),
           jamMasuk: new Date(),
           status: isLate ? "TELAT" : "HADIR",
-          latitudeMasuk: latitude,
-          longitudeMasuk: longitude,
+          latitude: latitude,
+          longitude: longitude,
+          jarakDariKantorMeter: Math.round(distance),
+          lokasiValid: true,
+          fotoMasuk: lampiranUrl,
           keterangan: keterangan || (isLate ? "Terlambat" : null),
         },
       });
@@ -143,8 +146,10 @@ export async function POST(request: Request) {
         where: { id: absensiHariIni.id },
         data: {
           jamPulang: new Date(),
-          latitudePulang: latitude,
-          longitudePulang: longitude,
+          latitude: latitude,
+          longitude: longitude,
+          jarakDariKantorMeter: Math.round(distance),
+          fotoPulang: lampiranUrl || absensiHariIni.fotoPulang,
           keterangan: ket,
         },
       });

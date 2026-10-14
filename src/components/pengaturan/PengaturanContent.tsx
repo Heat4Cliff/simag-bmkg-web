@@ -31,9 +31,9 @@ export default function PengaturanContent() {
             namaInstansi: data.setting.namaInstansi || "",
             alamat: data.setting.alamat || "",
             kontak: data.setting.kontak || "",
-            latitudeKantor: data.setting.latitudeKantor.toString(),
-            longitudeKantor: data.setting.longitudeKantor.toString(),
-            radiusAbsensiMeter: data.setting.radiusAbsensiMeter.toString(),
+            latitudeKantor: data.setting.latitudeKantor?.toString() || "",
+            longitudeKantor: data.setting.longitudeKantor?.toString() || "",
+            radiusAbsensiMeter: data.setting.radiusAbsensiMeter?.toString() || "",
           });
         }
       })

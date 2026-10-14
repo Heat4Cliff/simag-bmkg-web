@@ -21,12 +21,21 @@ export async function GET(request: Request) {
         });
         userIds = mhsIds.map((m) => m.userId);
       }
+    } else if (user.role === 'MENTOR_INSTANSI') {
+      const mentorProfile = await prisma.mentorProfile.findUnique({ where: { userId: user.id } });
+      if (mentorProfile) {
+        const mhsIds = await prisma.mahasiswaProfile.findMany({
+          where: { mentorId: mentorProfile.id },
+          select: { userId: true },
+        });
+        userIds = mhsIds.map((m) => m.userId);
+      }
     }
 
     let laporanQuery: any = { status: "TERKIRIM" };
     let modulQuery: any = { statusReview: "TERKIRIM" };
 
-    if (user.role === 'DPL') {
+    if (user.role === 'DPL' || user.role === 'MENTOR_INSTANSI') {
       laporanQuery.userId = { in: userIds };
       modulQuery.userId = { in: userIds };
     }
@@ -55,7 +64,7 @@ export async function GET(request: Request) {
       ...pendingModul.map(m => ({
         id: "m_" + m.id,
         tipe: "MODUL",
-        judul: m.judulTopik,
+        judul: m.judul || "Modul Praktikum",
         user: m.user.nama,
         tanggal: m.createdAt.toISOString(),
       }))

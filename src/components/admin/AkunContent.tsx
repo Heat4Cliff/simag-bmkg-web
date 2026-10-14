@@ -151,9 +151,9 @@ export default function AkunContent() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-visible">
-        <div className="overflow-visible min-h-[300px]">
-          <table className="w-full text-left text-sm">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto min-h-[300px]">
+          <table className="w-full text-left text-sm min-w-[640px]">
             <thead className="bg-gray-50 border-b border-gray-100 text-gray-600 font-semibold">
               <tr>
                 <th className="px-5 py-3">Nama Lengkap</th>
@@ -263,7 +263,7 @@ export default function AkunContent() {
 
       {/* Modal Tambah Akun */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <h2 className="font-bold text-gray-800">{editingId ? "Edit Akun" : "Tambah Akun Baru"}</h2>

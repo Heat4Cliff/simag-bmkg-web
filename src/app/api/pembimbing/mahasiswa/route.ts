@@ -7,23 +7,37 @@ export async function GET() {
   const userId = session?.user?.id;
   const role = (session?.user as { role?: string })?.role;
   
-  if (!userId || role !== "DPL") {
+  if (!userId || (role !== "DPL" && role !== "MENTOR_INSTANSI" && role !== "SUPERADMIN")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Cari profil pembimbing
-  const pembimbing = await prisma.dplProfile.findUnique({
-    where: { userId }
-  });
+  let whereClause: any = {};
 
-  if (!pembimbing) {
-    return NextResponse.json({ mahasiswa: [] });
+  if (role === "DPL") {
+    const pembimbing = await prisma.dplProfile.findUnique({
+      where: { userId }
+    });
+    if (!pembimbing) {
+      return NextResponse.json({ mahasiswa: [] });
+    }
+    whereClause = { dplId: pembimbing.id };
+  } else if (role === "MENTOR_INSTANSI") {
+    const mentor = await prisma.mentorProfile.findUnique({
+      where: { userId }
+    });
+    if (!mentor) {
+      return NextResponse.json({ mahasiswa: [] });
+    }
+    whereClause = { mentorId: mentor.id };
+  } else if (role === "SUPERADMIN") {
+    whereClause = {};
   }
 
   // Cari mahasiswa bimbingan
   const mahasiswa = await prisma.mahasiswaProfile.findMany({
-    where: { dplId: pembimbing.id },
+    where: whereClause,
     include: {
+      tempatMagang: true,
       user: {
         select: {
           nama: true,
@@ -46,7 +60,7 @@ export async function GET() {
     mahasiswa: mahasiswa.map(m => ({
       id: m.userId,
       nama: m.user.nama,
-      institusi: "-",
+      institusi: m.tempatMagang?.namaInstansi || "-",
       periodeSelesai: m.periodeSelesai,
       lastAbsen: (m.user as any)?.absensi?.[0] || null,
       pendingLaporan: (m.user as any)?.laporanHarian?.length || 0,

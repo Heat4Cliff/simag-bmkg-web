@@ -17,6 +17,12 @@ export async function GET() {
     const profile = await prisma.dplProfile.findUnique({ where: { userId } });
     const mhsProfiles = await prisma.mahasiswaProfile.findMany({ where: { dplId: profile?.id }, select: { userId: true } });
     where = { userId: { in: mhsProfiles.map((m) => m.userId) } };
+  } else if (role === "MENTOR_INSTANSI") {
+    const profile = await prisma.mentorProfile.findUnique({ where: { userId } });
+    const mhsProfiles = await prisma.mahasiswaProfile.findMany({ where: { mentorId: profile?.id }, select: { userId: true } });
+    where = { userId: { in: mhsProfiles.map((m) => m.userId) } };
+  } else if (role !== "SUPERADMIN") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
   // SUPERADMIN: semua laporan
 

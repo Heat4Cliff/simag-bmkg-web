@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { jenisAbsensi = "HADIR", tipe, latitude, longitude, foto, keterangan, lampiranBase64, lampiranExt } = body;
 
-    const infoLibur = cekLibur(new Date());
+    const infoLibur = cekLibur(new Date(), { allowWeekend: true });
     if (infoLibur.isLibur) {
       return NextResponse.json({ error: `Hari ini libur: ${infoLibur.keterangan}. Anda tidak bisa absen.` }, { status: 403 });
     }
@@ -51,20 +51,24 @@ export async function POST(request: Request) {
     let lokasiValid = true;
     let jarak = 0;
 
-    if (profile?.tempatMagang?.latitude && profile?.tempatMagang?.longitude) {
+    const kantorLat = profile?.tempatMagang?.latitudeKantor ?? null;
+    const kantorLon = profile?.tempatMagang?.longitudeKantor ?? null;
+    const maxRadius = profile?.tempatMagang?.radiusAbsensiMeter ?? 500;
+
+    if (kantorLat !== null && kantorLon !== null && finalLat !== 0 && finalLon !== 0) {
       jarak = hitungJarakMeter(
         finalLat,
         finalLon,
-        profile.tempatMagang.latitude,
-        profile.tempatMagang.longitude
+        kantorLat,
+        kantorLon
       );
-      if (jarak > profile.tempatMagang.radiusAbsen) {
+      if (jarak > maxRadius) {
         lokasiValid = false;
       }
     }
 
     if (!lokasiValid) {
-      return NextResponse.json({ error: `Lokasi Anda berada di luar radius absensi (${Math.round(jarak)}m).` }, { status: 400 });
+      return NextResponse.json({ error: `Lokasi Anda berada di luar radius absensi (${Math.round(jarak)}m dari kantor, batas radius ${maxRadius}m).` }, { status: 400 });
     }
 
     // 3. Simpan foto ke storage lokal jika ada
@@ -174,8 +178,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      lokasiValid: true,
-      jarak: 0,
+      lokasiValid: lokasiValid,
+      jarak: Math.round(jarak),
       pesan: `Absensi berhasil dicatat!`,
     });
   } catch (error) {
@@ -201,7 +205,7 @@ export async function GET() {
     },
   });
 
-  const infoLibur = cekLibur(today);
+  const infoLibur = cekLibur(today, { allowWeekend: true });
 
   return NextResponse.json({ absensi: absensiHariIni, isLibur: infoLibur.isLibur, keteranganLibur: infoLibur.keterangan });
 }

@@ -9,10 +9,33 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const resolvedParams = await params;
   const laporan = await prisma.laporanHarian.findUnique({
     where: { id: resolvedParams.id },
-    include: { user: { select: { nama: true } } }
+    include: { 
+      user: { 
+        select: { 
+          id: true,
+          nama: true,
+          mahasiswaProfile: true,
+        } 
+      } 
+    }
   });
 
   if (!laporan) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const role = (session.user as { role?: string })?.role;
+  if (role === "MAHASISWA" && laporan.userId !== session.user.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  } else if (role === "DPL") {
+    const dpl = await prisma.dplProfile.findUnique({ where: { userId: session.user.id } });
+    if (laporan.user.mahasiswaProfile?.dplId !== dpl?.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  } else if (role === "MENTOR_INSTANSI") {
+    const mentor = await prisma.mentorProfile.findUnique({ where: { userId: session.user.id } });
+    if (laporan.user.mahasiswaProfile?.mentorId !== mentor?.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
 
   return NextResponse.json({
     laporan: {
@@ -27,7 +50,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const session = await auth();
   const role = (session?.user as { role?: string })?.role;
   
-  if (role !== "DPL" && role !== "SUPERADMIN") {
+  if (role !== "DPL" && role !== "MENTOR_INSTANSI" && role !== "SUPERADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -36,6 +59,34 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const { status, komentar } = await request.json();
     
     if (!status) return NextResponse.json({ error: "Status required" }, { status: 400 });
+
+    const existing = await prisma.laporanHarian.findUnique({
+      where: { id: resolvedParams.id },
+      include: {
+        user: {
+          select: {
+            mahasiswaProfile: true
+          }
+        }
+      }
+    });
+
+    if (!existing) {
+      return NextResponse.json({ error: "Laporan tidak ditemukan" }, { status: 404 });
+    }
+
+    // Role-specific mentee verification
+    if (role === "DPL") {
+      const dpl = await prisma.dplProfile.findUnique({ where: { userId: session?.user?.id } });
+      if (existing.user.mahasiswaProfile?.dplId !== dpl?.id) {
+        return NextResponse.json({ error: "Anda bukan DPL dari mahasiswa ini" }, { status: 403 });
+      }
+    } else if (role === "MENTOR_INSTANSI") {
+      const mentor = await prisma.mentorProfile.findUnique({ where: { userId: session?.user?.id } });
+      if (existing.user.mahasiswaProfile?.mentorId !== mentor?.id) {
+        return NextResponse.json({ error: "Anda bukan Mentor dari mahasiswa ini" }, { status: 403 });
+      }
+    }
 
     const updated = await prisma.laporanHarian.update({
       where: { id: resolvedParams.id },

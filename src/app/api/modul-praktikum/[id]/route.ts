@@ -14,12 +14,32 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const modul = await prisma.modulPraktikum.findUnique({
       where: { id: resolvedParams.id },
       include: {
-        user: { select: { nama: true } },
+        user: { 
+          select: { 
+            nama: true,
+            mahasiswaProfile: true,
+          } 
+        },
         kategori: true,
       }
     });
 
     if (!modul) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    const role = (session.user as { role?: string })?.role;
+    if (role === "MAHASISWA" && modul.userId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    } else if (role === "DPL") {
+      const dpl = await prisma.dplProfile.findUnique({ where: { userId: session.user.id } });
+      if (modul.user.mahasiswaProfile?.dplId !== dpl?.id) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+    } else if (role === "MENTOR_INSTANSI") {
+      const mentor = await prisma.mentorProfile.findUnique({ where: { userId: session.user.id } });
+      if (modul.user.mahasiswaProfile?.mentorId !== mentor?.id) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+    }
 
     return NextResponse.json({ modul });
   } catch (err) {
@@ -92,13 +112,40 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   const role = (session?.user as { role?: string })?.role;
-  if (role !== "DPL" && role !== "SUPERADMIN") {
+  if (role !== "DPL" && role !== "MENTOR_INSTANSI" && role !== "SUPERADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const resolvedParams = await params;
     const { statusReview, catatanReview } = await request.json();
+
+    const existing = await prisma.modulPraktikum.findUnique({
+      where: { id: resolvedParams.id },
+      include: {
+        user: {
+          select: {
+            mahasiswaProfile: true
+          }
+        }
+      }
+    });
+
+    if (!existing) {
+      return NextResponse.json({ error: "Modul tidak ditemukan" }, { status: 404 });
+    }
+
+    if (role === "DPL") {
+      const dpl = await prisma.dplProfile.findUnique({ where: { userId: session?.user?.id } });
+      if (existing.user.mahasiswaProfile?.dplId !== dpl?.id) {
+        return NextResponse.json({ error: "Anda bukan DPL dari mahasiswa ini" }, { status: 403 });
+      }
+    } else if (role === "MENTOR_INSTANSI") {
+      const mentor = await prisma.mentorProfile.findUnique({ where: { userId: session?.user?.id } });
+      if (existing.user.mahasiswaProfile?.mentorId !== mentor?.id) {
+        return NextResponse.json({ error: "Anda bukan Mentor dari mahasiswa ini" }, { status: 403 });
+      }
+    }
 
     const updated = await prisma.modulPraktikum.update({
       where: { id: resolvedParams.id },
@@ -114,7 +161,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     let statusText = statusReview;
     if (statusReview === "DISETUJUI") statusText = "telah disetujui";
     if (statusReview === "REVISI") statusText = "perlu direvisi";
-    if (statusReview === "DITOLAK") statusText = "telah ditolak";
 
     await prisma.notifikasi.create({
       data: {

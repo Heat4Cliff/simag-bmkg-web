@@ -51,12 +51,10 @@ export const ID_HOLIDAYS: Record<string, string> = {
   "2025-12-25": "Hari Raya Natal",
 };
 
-/**
- * Mengecek apakah suatu tanggal adalah hari libur (nasional/cuti bersama) atau akhir pekan.
- * @param date Objek Date
- * @returns Object berisi { isLibur: boolean, keterangan?: string }
- */
-export function cekLibur(date: Date | string | number): { isLibur: boolean; keterangan: string } {
+export function cekLibur(
+  date: Date | string | number,
+  options?: { allowWeekend?: boolean }
+): { isLibur: boolean; keterangan: string } {
   const d = new Date(date);
   const dateStr = format(d, "yyyy-MM-dd");
 
@@ -64,7 +62,7 @@ export function cekLibur(date: Date | string | number): { isLibur: boolean; kete
     return { isLibur: true, keterangan: ID_HOLIDAYS[dateStr] };
   }
 
-  if (isWeekend(d)) {
+  if (!options?.allowWeekend && isWeekend(d)) {
     const isSaturday = d.getDay() === 6;
     return { 
       isLibur: true, 

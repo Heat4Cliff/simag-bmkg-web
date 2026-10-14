@@ -5,8 +5,8 @@ import DataMahasiswaContent from "@/components/pembimbing/DataMahasiswaContent";
 
 export default async function DataMahasiswaPage() {
   const session = await auth();
-  if (!session) redirect("/login");
-  if ((session.user as { role?: string }).role !== "DPL") redirect("/dashboard");
+  const role = (session.user as { role?: string })?.role ?? "";
+  if (!["DPL", "MENTOR_INSTANSI", "SUPERADMIN"].includes(role)) redirect("/dashboard");
 
   return (
     <DashboardLayout>

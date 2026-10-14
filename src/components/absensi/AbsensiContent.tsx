@@ -49,6 +49,38 @@ export default function AbsensiContent() {
   const jamString = formatWaktu(now);
   const tanggalString = formatTanggal(now);
 
+  const ambilLokasi = useCallback(() => {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      setGeoStatus("error");
+      toast.error("Geolocation tidak didukung oleh browser ini.");
+      return;
+    }
+
+    setGeoStatus("loading");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        setKoordinat({ lat, lon });
+        setGeoStatus("success");
+
+        const d = hitungJarakMeter(
+          lat,
+          lon,
+          KOORDINAT_KANTOR.latitude,
+          KOORDINAT_KANTOR.longitude
+        );
+        setJarak(d);
+      },
+      (err) => {
+        console.warn("Geolocation error:", err);
+        setGeoStatus("error");
+        toast.error("Gagal mendeteksi lokasi GPS. Pastikan izin lokasi aktif.");
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+  }, []);
+
   useEffect(() => {
     // Fetch status absensi hari ini
     fetch("/api/absensi", { cache: "no-store" })
@@ -68,10 +100,12 @@ export default function AbsensiContent() {
       })
       .catch(() => {});
 
+    ambilLokasi();
+
     return () => {
       stopKamera();
     };
-  }, []);
+  }, [ambilLokasi]);
 
   const mulaiKamera = async () => {
     try {
@@ -91,22 +125,9 @@ export default function AbsensiContent() {
       }, 100);
     } catch (err) {
       console.warn("Kamera error:", err);
-      toast.warning("Kamera tidak dapat diakses. Menggunakan foto simulasi.");
-      
-      // Buat dummy foto menggunakan canvas jika tidak ada kamera
-      const canvas = document.createElement("canvas");
-      canvas.width = 640;
-      canvas.height = 480;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.fillStyle = "#e5e7eb";
-        ctx.fillRect(0, 0, 640, 480);
-        ctx.fillStyle = "#6b7280";
-        ctx.font = "bold 24px sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("📷 FOTO SIMULASI", 320, 240);
-      }
-      setFoto(canvas.toDataURL("image/jpeg", 0.8));
+      toast.error("Kamera tidak dapat diakses. Pastikan izin kamera aktif pada browser.");
+      setKameraAktif(false);
+      setFoto(null);
     }
   };
 
@@ -128,9 +149,15 @@ export default function AbsensiContent() {
   };
 
   const handleAbsen = async () => {
-    if (jenisAbsensi === "HADIR" && !foto) {
-      toast.error("Harap ambil foto terlebih dahulu.");
-      return;
+    if (jenisAbsensi === "HADIR") {
+      if (!foto) {
+        toast.error("Harap ambil foto selfie terlebih dahulu.");
+        return;
+      }
+      if (!koordinat) {
+        toast.error("Koordinat GPS belum terdeteksi. Silakan perbarui lokasi.");
+        return;
+      }
     }
     if ((jenisAbsensi === "IZIN" || jenisAbsensi === "SAKIT") && !keterangan && !lampiranBase64) {
       toast.error("Keterangan atau surat lampiran wajib disertakan.");
@@ -159,9 +186,9 @@ export default function AbsensiContent() {
         toast.error(data.error ?? "Terjadi kesalahan.");
       } else {
         if (data.lokasiValid) {
-          toast.success(data.pesan);
+          toast.success(data.pesan || "Absensi berhasil dicatat!");
         } else {
-          toast.warning(data.pesan);
+          toast.warning(data.pesan || "Absensi dicatat di luar radius.");
         }
         // Refresh status
         const res2 = await fetch("/api/absensi");
@@ -353,6 +380,82 @@ export default function AbsensiContent() {
                     Buka Kamera
                   </button>
                 )}
+
+                {/* Step 2: Lokasi GPS */}
+                <div className="mt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-semibold text-gray-700">2. Lokasi GPS Presisi</p>
+                    <button
+                      type="button"
+                      onClick={ambilLokasi}
+                      disabled={geoStatus === "loading"}
+                      className="text-xs text-[#1E8A3C] hover:underline flex items-center gap-1 font-medium disabled:opacity-50"
+                    >
+                      <RefreshCw className={`w-3 h-3 ${geoStatus === "loading" ? "animate-spin" : ""}`} />
+                      Perbarui Lokasi
+                    </button>
+                  </div>
+
+                  <div className={`p-4 rounded-xl border-2 transition-all ${
+                    geoStatus === "success"
+                      ? "border-green-200 bg-green-50/50"
+                      : geoStatus === "error"
+                      ? "border-red-200 bg-red-50/50"
+                      : "border-gray-100 bg-gray-50"
+                  }`}>
+                    <div className="flex items-start gap-3">
+                      <div className={`p-2 rounded-lg ${
+                        geoStatus === "success"
+                          ? "bg-green-100 text-green-700"
+                          : geoStatus === "error"
+                          ? "bg-red-100 text-red-600"
+                          : "bg-gray-200 text-gray-600"
+                      }`}>
+                        <MapPin className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1 text-sm">
+                        {geoStatus === "loading" && (
+                          <div className="flex items-center gap-2 text-gray-600 py-1">
+                            <Loader2 className="w-4 h-4 animate-spin text-[#1E8A3C]" />
+                            <span>Mendeteksi koordinat GPS presisi...</span>
+                          </div>
+                        )}
+                        {geoStatus === "success" && koordinat && (
+                          <div>
+                            <p className="font-semibold text-gray-800">
+                              Koordinat: {koordinat.lat.toFixed(6)}, {koordinat.lon.toFixed(6)}
+                            </p>
+                            {jarak !== null && (
+                              <p className="text-xs text-gray-600 mt-0.5">
+                                Jarak terdeteksi ke kantor: ~{Math.round(jarak)} meter
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        {geoStatus === "error" && (
+                          <div>
+                            <p className="font-semibold text-red-600">Gagal Mendapatkan Lokasi</p>
+                            <p className="text-xs text-red-500 mt-0.5">
+                              Pastikan izin akses lokasi diaktifkan pada browser perangkat Anda.
+                            </p>
+                          </div>
+                        )}
+                        {geoStatus === "idle" && (
+                          <div>
+                            <p className="font-medium text-gray-600">Lokasi belum terdeteksi</p>
+                            <button
+                              type="button"
+                              onClick={ambilLokasi}
+                              className="mt-1.5 text-xs bg-[#1E8A3C] text-white px-3 py-1.5 rounded-lg font-medium hover:bg-[#197532] transition-colors"
+                            >
+                              Deteksi Lokasi GPS
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </>
           ) : (
@@ -402,7 +505,7 @@ export default function AbsensiContent() {
           {/* Tombol Submit */}
           <button
             onClick={handleAbsen}
-            disabled={loading || (jenisAbsensi === "HADIR" && !foto) || ((jenisAbsensi === "IZIN" || jenisAbsensi === "SAKIT") && !keterangan && !lampiranBase64)}
+            disabled={loading || (jenisAbsensi === "HADIR" && (!foto || !koordinat)) || ((jenisAbsensi === "IZIN" || jenisAbsensi === "SAKIT") && !keterangan && !lampiranBase64)}
             className="w-full bg-[#1E8A3C] text-white py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-[#1E8A3C]/20 hover:bg-[#197532] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (

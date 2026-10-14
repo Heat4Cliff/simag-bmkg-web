@@ -117,16 +117,31 @@ export async function GET(request: Request) {
           modul: moduls.filter(m => format(m.createdAt, "yyyy-MM-dd") === dFormat).length,
         };
       });
-    } else if (role === "DPL") {
-      const dplProfile = await prisma.dplProfile.findUnique({ where: { userId } });
-      const totalMhs = await prisma.mahasiswaProfile.count({
-        where: { dplId: dplProfile?.id },
-      });
-      const mhsIds = await prisma.mahasiswaProfile.findMany({
-        where: { dplId: dplProfile?.id },
-        select: { userId: true },
-      });
-      const userIds = mhsIds.map((m) => m.userId);
+    } else if (role === "DPL" || role === "MENTOR_INSTANSI") {
+      let userIds: string[] = [];
+      let totalMhs = 0;
+
+      if (role === "DPL") {
+        const dplProfile = await prisma.dplProfile.findUnique({ where: { userId } });
+        totalMhs = await prisma.mahasiswaProfile.count({
+          where: { dplId: dplProfile?.id },
+        });
+        const mhsIds = await prisma.mahasiswaProfile.findMany({
+          where: { dplId: dplProfile?.id },
+          select: { userId: true },
+        });
+        userIds = mhsIds.map((m) => m.userId);
+      } else {
+        const mentorProfile = await prisma.mentorProfile.findUnique({ where: { userId } });
+        totalMhs = await prisma.mahasiswaProfile.count({
+          where: { mentorId: mentorProfile?.id },
+        });
+        const mhsIds = await prisma.mahasiswaProfile.findMany({
+          where: { mentorId: mentorProfile?.id },
+          select: { userId: true },
+        });
+        userIds = mhsIds.map((m) => m.userId);
+      }
   
       const pendingLaporan = await prisma.laporanHarian.count({
         where: { userId: { in: userIds }, status: "TERKIRIM" },
@@ -226,7 +241,7 @@ export async function GET(request: Request) {
         ...modRecent.map(m => ({
           id: "m_" + m.id,
           user: m.user?.nama || "Unknown",
-          judul: m.judulTopik || "Modul Praktikum",
+          judul: m.judul || "Modul Praktikum",
           tipe: "Modul",
           waktu: m.createdAt.toISOString(),
           timeObj: m.createdAt
@@ -332,7 +347,7 @@ export async function GET(request: Request) {
         ...modRecent.map(m => ({
           id: "m_" + m.id,
           user: m.user?.nama || "Unknown",
-          judul: m.judulTopik || "Modul Praktikum",
+          judul: m.judul || "Modul Praktikum",
           tipe: "Modul",
           waktu: m.createdAt.toISOString(),
           timeObj: m.createdAt
