@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { hitungJarakMeter } from "@/lib/utils";
+import { hitungJarakMeter, KOORDINAT_KANTOR, RADIUS_ABSENSI_METER } from "@/lib/utils";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { startOfDay, endOfDay } from "date-fns";
@@ -39,8 +39,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Jenis absensi tidak valid" }, { status: 400 });
     }
 
-    const finalLat = latitude || 0;
-    const finalLon = longitude || 0;
+    const finalLat = typeof latitude === "number" ? latitude : parseFloat(latitude) || 0;
+    const finalLon = typeof longitude === "number" ? longitude : parseFloat(longitude) || 0;
+
+    if (jenisAbsensi === "HADIR" && (finalLat === 0 || finalLon === 0)) {
+      return NextResponse.json(
+        { error: "Koordinat lokasi GPS tidak terdeteksi. Silakan aktifkan GPS di perangkat Anda dan coba lagi." },
+        { status: 400 }
+      );
+    }
 
     // Ambil profile mahasiswa untuk cek tempat magang
     const profile = await prisma.mahasiswaProfile.findUnique({
@@ -51,9 +58,9 @@ export async function POST(request: Request) {
     let lokasiValid = true;
     let jarak = 0;
 
-    const kantorLat = profile?.tempatMagang?.latitudeKantor ?? null;
-    const kantorLon = profile?.tempatMagang?.longitudeKantor ?? null;
-    const maxRadius = profile?.tempatMagang?.radiusAbsensiMeter ?? 500;
+    const kantorLat = profile?.tempatMagang?.latitudeKantor ?? KOORDINAT_KANTOR.latitude;
+    const kantorLon = profile?.tempatMagang?.longitudeKantor ?? KOORDINAT_KANTOR.longitude;
+    const maxRadius = profile?.tempatMagang?.radiusAbsensiMeter ?? RADIUS_ABSENSI_METER;
 
     if (kantorLat !== null && kantorLon !== null && finalLat !== 0 && finalLon !== 0) {
       jarak = hitungJarakMeter(
@@ -68,7 +75,9 @@ export async function POST(request: Request) {
     }
 
     if (!lokasiValid) {
-      return NextResponse.json({ error: `Lokasi Anda berada di luar radius absensi (${Math.round(jarak)}m dari kantor, batas radius ${maxRadius}m).` }, { status: 400 });
+      return NextResponse.json({
+        error: `Lokasi Anda berada di luar radius absensi (${Math.round(jarak)}m dari kantor, batas radius ${maxRadius}m). Pastikan Anda berada di lingkungan kantor tempat magang.`
+      }, { status: 400 });
     }
 
     // 3. Simpan foto ke storage lokal jika ada
@@ -207,5 +216,23 @@ export async function GET() {
 
   const infoLibur = cekLibur(today, { allowWeekend: true });
 
-  return NextResponse.json({ absensi: absensiHariIni, isLibur: infoLibur.isLibur, keteranganLibur: infoLibur.keterangan });
+  const profile = await prisma.mahasiswaProfile.findUnique({
+    where: { userId: session.user.id },
+    include: { tempatMagang: true },
+  });
+
+  const kantor = {
+    nama: profile?.tempatMagang?.namaInstansi || "Kantor BMKG",
+    alamat: profile?.tempatMagang?.alamat || "Stasiun Meteorologi / Kantor BMKG",
+    latitude: profile?.tempatMagang?.latitudeKantor ?? KOORDINAT_KANTOR.latitude,
+    longitude: profile?.tempatMagang?.longitudeKantor ?? KOORDINAT_KANTOR.longitude,
+    radius: profile?.tempatMagang?.radiusAbsensiMeter ?? RADIUS_ABSENSI_METER,
+  };
+
+  return NextResponse.json({
+    absensi: absensiHariIni,
+    isLibur: infoLibur.isLibur,
+    keteranganLibur: infoLibur.keterangan,
+    kantor,
+  });
 }

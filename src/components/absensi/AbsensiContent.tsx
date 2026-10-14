@@ -13,6 +13,12 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { KOORDINAT_KANTOR, RADIUS_ABSENSI_METER, hitungJarakMeter, formatTanggal, formatWaktu } from "@/lib/utils";
+import {
+  getPreciseCoordinates,
+  getLastKnownLocation,
+  GeoCoordinate,
+  GeoErrorDetail,
+} from "@/lib/geo";
 
 type GeoStatus = "idle" | "loading" | "success" | "error";
 type AbsenTipe = "MASUK" | "PULANG";
@@ -32,6 +38,15 @@ export default function AbsensiContent() {
   const [geoStatus, setGeoStatus] = useState<GeoStatus>("idle");
   const [koordinat, setKoordinat] = useState<{ lat: number; lon: number } | null>(null);
   const [jarak, setJarak] = useState<number | null>(null);
+  const [errorDetail, setErrorDetail] = useState<GeoErrorDetail | null>(null);
+  const [kantorInfo, setKantorInfo] = useState({
+    nama: "Kantor BMKG",
+    alamat: "",
+    latitude: KOORDINAT_KANTOR.latitude,
+    longitude: KOORDINAT_KANTOR.longitude,
+    radius: RADIUS_ABSENSI_METER,
+  });
+
   const [kameraAktif, setKameraAktif] = useState(false);
   const [foto, setFoto] = useState<string | null>(null);
   const [tipe, setTipe] = useState<AbsenTipe>("MASUK");
@@ -49,46 +64,46 @@ export default function AbsensiContent() {
   const jamString = formatWaktu(now);
   const tanggalString = formatTanggal(now);
 
-  const ambilLokasi = useCallback(() => {
-    if (typeof window === "undefined" || !navigator.geolocation) {
-      setGeoStatus("error");
-      toast.error("Geolocation tidak didukung oleh browser ini.");
-      return;
-    }
-
+  const ambilLokasi = useCallback(async (customKantor?: typeof kantorInfo) => {
     setGeoStatus("loading");
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        setKoordinat({ lat, lon });
-        setGeoStatus("success");
+    setErrorDetail(null);
 
-        const d = hitungJarakMeter(
-          lat,
-          lon,
-          KOORDINAT_KANTOR.latitude,
-          KOORDINAT_KANTOR.longitude
-        );
-        setJarak(d);
-      },
-      (err) => {
-        console.warn("Geolocation error:", err);
-        setGeoStatus("error");
-        toast.error("Gagal mendeteksi lokasi GPS. Pastikan izin lokasi aktif.");
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-    );
-  }, []);
+    const targetKantor = customKantor || kantorInfo;
+
+    try {
+      const coord = await getPreciseCoordinates();
+      setKoordinat({ lat: coord.lat, lon: coord.lon });
+      setGeoStatus("success");
+      setErrorDetail(null);
+
+      const d = hitungJarakMeter(
+        coord.lat,
+        coord.lon,
+        targetKantor.latitude,
+        targetKantor.longitude
+      );
+      setJarak(d);
+    } catch (err: any) {
+      console.warn("Geolocation error in absensi:", err);
+      setGeoStatus("error");
+      setErrorDetail(err);
+      if (err.type === "POSITION_UNAVAILABLE") {
+        toast.error("Layanan Lokasi (GPS) di HP Anda nonaktif. Harap nyalakan GPS di HP.");
+      } else if (err.type === "PERMISSION_DENIED") {
+        toast.error("Izin akses lokasi ditolak oleh browser.");
+      } else {
+        toast.error(err.message || "Gagal mendeteksi lokasi GPS.");
+      }
+    }
+  }, [kantorInfo]);
 
   useEffect(() => {
-    // Fetch status absensi hari ini
+    // 1. Fetch status absensi hari ini & info kantor
     fetch("/api/absensi", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
         if (data.absensi) {
           setAbsensiHariIni(data.absensi);
-          // Auto-set tipe
           if (data.absensi.jamMasuk && !data.absensi.jamPulang && data.absensi.status !== "IZIN" && data.absensi.status !== "SAKIT") {
             setTipe("PULANG");
           }
@@ -97,15 +112,72 @@ export default function AbsensiContent() {
           setIsLibur(true);
           setKeteranganLibur(data.keteranganLibur);
         }
+        if (data.kantor) {
+          setKantorInfo(data.kantor);
+        }
       })
       .catch(() => {});
 
-    ambilLokasi();
+    // 2. Cek apakah sudah ada lokasi cached dari modal
+    const cached = getLastKnownLocation();
+    if (cached) {
+      setKoordinat({ lat: cached.lat, lon: cached.lon });
+      setGeoStatus("success");
+      const d = hitungJarakMeter(
+        cached.lat,
+        cached.lon,
+        kantorInfo.latitude,
+        kantorInfo.longitude
+      );
+      setJarak(d);
+    } else {
+      ambilLokasi();
+    }
+
+    // 3. Listener event simag:location-updated dari modal
+    const handleLocationEvent = (e: any) => {
+      const detail: GeoCoordinate = e.detail;
+      if (detail?.lat && detail?.lon) {
+        setKoordinat({ lat: detail.lat, lon: detail.lon });
+        setGeoStatus("success");
+        setErrorDetail(null);
+        const d = hitungJarakMeter(
+          detail.lat,
+          detail.lon,
+          kantorInfo.latitude,
+          kantorInfo.longitude
+        );
+        setJarak(d);
+      }
+    };
+    window.addEventListener("simag:location-updated", handleLocationEvent);
+
+    // 4. Pasang continuous watchPosition agar auto-update saat user menyalakan GPS di HP
+    let watchId: number | null = null;
+    if (typeof window !== "undefined" && "geolocation" in navigator) {
+      watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          setKoordinat({ lat, lon });
+          setGeoStatus("success");
+          setErrorDetail(null);
+          const d = hitungJarakMeter(lat, lon, kantorInfo.latitude, kantorInfo.longitude);
+          setJarak(d);
+        },
+        () => {},
+        { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
+      );
+    }
 
     return () => {
       stopKamera();
+      window.removeEventListener("simag:location-updated", handleLocationEvent);
+      if (watchId !== null && typeof window !== "undefined" && "geolocation" in navigator) {
+        navigator.geolocation.clearWatch(watchId);
+      }
     };
-  }, [ambilLokasi]);
+  }, [ambilLokasi, kantorInfo]);
 
   const mulaiKamera = async () => {
     try {
@@ -154,8 +226,8 @@ export default function AbsensiContent() {
         toast.error("Harap ambil foto selfie terlebih dahulu.");
         return;
       }
-      if (!koordinat) {
-        toast.error("Koordinat GPS belum terdeteksi. Silakan perbarui lokasi.");
+      if (!koordinat || koordinat.lat === 0 || koordinat.lon === 0) {
+        toast.error("Koordinat GPS belum terdeteksi. Silakan nyalakan GPS di HP dan klik 'Perbarui Lokasi'.");
         return;
       }
     }
@@ -384,10 +456,13 @@ export default function AbsensiContent() {
                 {/* Step 2: Lokasi GPS */}
                 <div className="mt-4">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-semibold text-gray-700">2. Lokasi GPS Presisi</p>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-700">2. Lokasi GPS Presisi</p>
+                      <p className="text-[11px] text-gray-500">Target Presensi: {kantorInfo.nama}</p>
+                    </div>
                     <button
                       type="button"
-                      onClick={ambilLokasi}
+                      onClick={() => ambilLokasi()}
                       disabled={geoStatus === "loading"}
                       className="text-xs text-[#1E8A3C] hover:underline flex items-center gap-1 font-medium disabled:opacity-50"
                     >
@@ -398,7 +473,9 @@ export default function AbsensiContent() {
 
                   <div className={`p-4 rounded-xl border-2 transition-all ${
                     geoStatus === "success"
-                      ? "border-green-200 bg-green-50/50"
+                      ? jarak !== null && jarak <= kantorInfo.radius
+                        ? "border-green-200 bg-green-50/50"
+                        : "border-amber-200 bg-amber-50/50"
                       : geoStatus === "error"
                       ? "border-red-200 bg-red-50/50"
                       : "border-gray-100 bg-gray-50"
@@ -406,7 +483,9 @@ export default function AbsensiContent() {
                     <div className="flex items-start gap-3">
                       <div className={`p-2 rounded-lg ${
                         geoStatus === "success"
-                          ? "bg-green-100 text-green-700"
+                          ? jarak !== null && jarak <= kantorInfo.radius
+                            ? "bg-green-100 text-green-700"
+                            : "bg-amber-100 text-amber-700"
                           : geoStatus === "error"
                           ? "bg-red-100 text-red-600"
                           : "bg-gray-200 text-gray-600"
@@ -417,27 +496,41 @@ export default function AbsensiContent() {
                         {geoStatus === "loading" && (
                           <div className="flex items-center gap-2 text-gray-600 py-1">
                             <Loader2 className="w-4 h-4 animate-spin text-[#1E8A3C]" />
-                            <span>Mendeteksi koordinat GPS presisi...</span>
+                            <span>Mencari koordinat satelit GPS & sinyal seluler...</span>
                           </div>
                         )}
                         {geoStatus === "success" && koordinat && (
-                          <div>
-                            <p className="font-semibold text-gray-800">
-                              Koordinat: {koordinat.lat.toFixed(6)}, {koordinat.lon.toFixed(6)}
-                            </p>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold text-gray-800">
+                                {koordinat.lat.toFixed(6)}, {koordinat.lon.toFixed(6)}
+                              </span>
+                              <span className="text-[10px] bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-0.5">
+                                <CheckCircle2 className="w-3 h-3 text-green-600" /> GPS Terkunci
+                              </span>
+                            </div>
                             {jarak !== null && (
-                              <p className="text-xs text-gray-600 mt-0.5">
-                                Jarak terdeteksi ke kantor: ~{Math.round(jarak)} meter
+                              <p className={`text-xs font-semibold ${jarak <= kantorInfo.radius ? "text-green-700" : "text-amber-700"}`}>
+                                Jarak ke {kantorInfo.nama}: ~{Math.round(jarak)} meter (Maks: {kantorInfo.radius}m)
                               </p>
                             )}
                           </div>
                         )}
                         {geoStatus === "error" && (
-                          <div>
-                            <p className="font-semibold text-red-600">Gagal Mendapatkan Lokasi</p>
-                            <p className="text-xs text-red-500 mt-0.5">
-                              Pastikan izin akses lokasi diaktifkan pada browser perangkat Anda.
+                          <div className="space-y-1.5">
+                            <p className="font-bold text-red-600">
+                              {errorDetail?.message || "Gagal Mendapatkan Lokasi"}
                             </p>
+                            <p className="text-xs text-gray-600">
+                              {errorDetail?.suggestion || "Pastikan izin akses lokasi diaktifkan pada browser dan GPS di HP Anda menyala."}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => ambilLokasi()}
+                              className="mt-1 text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1"
+                            >
+                              <RefreshCw className="w-3 h-3" /> Coba Deteksi Ulang
+                            </button>
                           </div>
                         )}
                         {geoStatus === "idle" && (
@@ -445,7 +538,7 @@ export default function AbsensiContent() {
                             <p className="font-medium text-gray-600">Lokasi belum terdeteksi</p>
                             <button
                               type="button"
-                              onClick={ambilLokasi}
+                              onClick={() => ambilLokasi()}
                               className="mt-1.5 text-xs bg-[#1E8A3C] text-white px-3 py-1.5 rounded-lg font-medium hover:bg-[#197532] transition-colors"
                             >
                               Deteksi Lokasi GPS

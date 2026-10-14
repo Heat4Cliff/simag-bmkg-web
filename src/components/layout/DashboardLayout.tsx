@@ -2,8 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Navbar from "./Navbar";
 import { Dock } from "./Dock";
+import LocationEnforcerModal from "@/components/common/LocationEnforcerModal";
+import NotificationPromptModal from "@/components/common/NotificationPromptModal";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -11,6 +14,8 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const role = (session?.user as { role?: string })?.role;
   const [notifCount, setNotifCount] = useState(0);
 
   useEffect(() => {
@@ -77,6 +82,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <Navbar notifCount={notifCount} />
 
       <Dock />
+
+      {/* Enforcement & Prompt Modals */}
+      <LocationEnforcerModal role={role} />
+      <NotificationPromptModal />
 
       {/* Main content */}
       <main className="pt-16 pb-32 min-h-screen w-full max-w-full overflow-x-hidden">
