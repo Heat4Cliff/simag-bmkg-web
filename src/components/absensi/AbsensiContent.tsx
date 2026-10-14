@@ -64,25 +64,15 @@ export default function AbsensiContent() {
   const jamString = formatWaktu(now);
   const tanggalString = formatTanggal(now);
 
-  const ambilLokasi = useCallback(async (customKantor?: typeof kantorInfo) => {
+  const ambilLokasi = useCallback(async () => {
     setGeoStatus("loading");
     setErrorDetail(null);
-
-    const targetKantor = customKantor || kantorInfo;
 
     try {
       const coord = await getPreciseCoordinates();
       setKoordinat({ lat: coord.lat, lon: coord.lon });
       setGeoStatus("success");
       setErrorDetail(null);
-
-      const d = hitungJarakMeter(
-        coord.lat,
-        coord.lon,
-        targetKantor.latitude,
-        targetKantor.longitude
-      );
-      setJarak(d);
     } catch (err: any) {
       console.warn("Geolocation error in absensi:", err);
       setGeoStatus("error");
@@ -95,7 +85,38 @@ export default function AbsensiContent() {
         toast.error(err.message || "Gagal mendeteksi lokasi GPS.");
       }
     }
-  }, [kantorInfo]);
+  }, []);
+
+  // Hitung ulang jarak setiap kali koordinat atau kantorInfo berubah
+  useEffect(() => {
+    if (koordinat && koordinat.lat !== 0 && koordinat.lon !== 0) {
+      const d = hitungJarakMeter(
+        koordinat.lat,
+        koordinat.lon,
+        kantorInfo.latitude,
+        kantorInfo.longitude
+      );
+      setJarak(d);
+    }
+  }, [koordinat, kantorInfo]);
+
+  // Pasangkan stream ke video element saat kamera aktif
+  useEffect(() => {
+    if (kameraAktif && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+      videoRef.current.play().catch((e) => console.warn("Auto-play prevented", e));
+    }
+  }, [kameraAktif]);
+
+  // Bersihkan stream kamera HANYA saat komponen unmount
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     // 1. Fetch status absensi hari ini & info kantor
@@ -123,13 +144,6 @@ export default function AbsensiContent() {
     if (cached) {
       setKoordinat({ lat: cached.lat, lon: cached.lon });
       setGeoStatus("success");
-      const d = hitungJarakMeter(
-        cached.lat,
-        cached.lon,
-        kantorInfo.latitude,
-        kantorInfo.longitude
-      );
-      setJarak(d);
     } else {
       ambilLokasi();
     }
@@ -141,13 +155,6 @@ export default function AbsensiContent() {
         setKoordinat({ lat: detail.lat, lon: detail.lon });
         setGeoStatus("success");
         setErrorDetail(null);
-        const d = hitungJarakMeter(
-          detail.lat,
-          detail.lon,
-          kantorInfo.latitude,
-          kantorInfo.longitude
-        );
-        setJarak(d);
       }
     };
     window.addEventListener("simag:location-updated", handleLocationEvent);
@@ -162,8 +169,6 @@ export default function AbsensiContent() {
           setKoordinat({ lat, lon });
           setGeoStatus("success");
           setErrorDetail(null);
-          const d = hitungJarakMeter(lat, lon, kantorInfo.latitude, kantorInfo.longitude);
-          setJarak(d);
         },
         () => {},
         { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
@@ -171,30 +176,25 @@ export default function AbsensiContent() {
     }
 
     return () => {
-      stopKamera();
       window.removeEventListener("simag:location-updated", handleLocationEvent);
       if (watchId !== null && typeof window !== "undefined" && "geolocation" in navigator) {
         navigator.geolocation.clearWatch(watchId);
       }
     };
-  }, [ambilLokasi, kantorInfo]);
+  }, [ambilLokasi]);
 
   const mulaiKamera = async () => {
     try {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user", width: 640, height: 480 },
+        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
       });
       streamRef.current = stream;
       setKameraAktif(true);
       setFoto(null);
-      
-      // Tunggu render selesai agar videoRef tidak null
-      setTimeout(() => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.play().catch(e => console.warn("Auto-play prevented", e));
-        }
-      }, 100);
     } catch (err) {
       console.warn("Kamera error:", err);
       toast.error("Kamera tidak dapat diakses. Pastikan izin kamera aktif pada browser.");
@@ -371,7 +371,10 @@ export default function AbsensiContent() {
                 {(["HADIR", "IZIN", "SAKIT"] as const).map((j) => (
                   <button
                     key={j}
-                    onClick={() => setJenisAbsensi(j)}
+                    onClick={() => {
+                      setJenisAbsensi(j);
+                      if (j !== "HADIR") stopKamera();
+                    }}
                     className={`py-2 px-3 rounded-xl text-sm font-semibold border-2 transition-all ${
                       jenisAbsensi === j
                         ? "border-[#1E8A3C] bg-[#1E8A3C] text-white"
@@ -436,15 +439,26 @@ export default function AbsensiContent() {
                       autoPlay
                       playsInline
                     />
-                    <button
-                      onClick={ambilFoto}
-                      className="mt-2 w-full bg-[#1E8A3C] text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-[#0d5cc5] transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Camera className="w-4 h-4" /> Ambil Foto
-                    </button>
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={stopKamera}
+                        className="w-full bg-gray-100 text-gray-700 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors"
+                      >
+                        Tutup Kamera
+                      </button>
+                      <button
+                        type="button"
+                        onClick={ambilFoto}
+                        className="w-full bg-[#1E8A3C] text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-[#166c2f] transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Camera className="w-4 h-4" /> Ambil Foto
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <button
+                    type="button"
                     onClick={mulaiKamera}
                     className="w-full flex items-center justify-center gap-2 bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl py-4 text-sm text-gray-600 hover:bg-gray-100 hover:border-gray-300 transition-colors"
                   >
