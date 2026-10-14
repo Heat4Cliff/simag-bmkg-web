@@ -114,8 +114,6 @@ export default function Navbar({ notifCount = 0 }: NavbarProps) {
                     <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700">
                       {user?.role === "SUPERADMIN"
                         ? "Super Admin"
-                        : user?.role === "KAPRODI"
-                        ? "Kaprodi"
                         : user?.role === "DPL"
                         ? "DPL"
                         : user?.role === "MENTOR_INSTANSI"

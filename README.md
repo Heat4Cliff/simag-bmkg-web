@@ -30,8 +30,7 @@
 ## 🌟 Fitur Utama
 
 - **Multi-Role RBAC (Role-Based Access Control)**:
-  - `SUPERADMIN`: Manajemen data master, instansi tempat magang, penempatan mahasiswa, pembuatan akun, dan ekspor laporan global.
-  - `KAPRODI`: Monitoring ketercapaian magang tingkat prodi, validasi status, dan ringkasan akademik.
+  - `SUPERADMIN`: Manajemen data master, instansi tempat magang, penempatan mahasiswa, pengelolaan akun, dan rekapitulasi data (Laporan Global & Dashboard Eksekutif).
   - `DPL (Dosen Pembimbing Lapangan)`: Pemantauan kehadiran, bimbingan, revisi laporan harian, penilaian modul bimbingan.
   - `MENTOR_INSTANSI`: Evaluasi praktikum harian instansi dan validasi presensi di lokasi mitra.
   - `MAHASISWA`: Presensi masuk/pulang berbasis geolokasi & selfie, upload laporan harian, pengumpulan modul praktikum, dan agenda kalender.
@@ -81,8 +80,7 @@ flowchart TD
     ErrorMsg --> InputCreds
     ValidateAuth -- Benar --> CheckRole{Cek Role Pengguna}
     
-    CheckRole -- SUPERADMIN --> SuperDashboard[Dashboard Admin: Manajemen Master & Akun]
-    CheckRole -- KAPRODI --> KaprodiDashboard[Dashboard Kaprodi: Monitoring Prodi]
+    CheckRole -- SUPERADMIN --> SuperDashboard[Dashboard Admin: Manajemen Master, Akun & Laporan Global]
     CheckRole -- DPL --> DplDashboard[Dashboard DPL: Mahasiswa Bimbingan & Review]
     CheckRole -- MENTOR_INSTANSI --> MentorDashboard[Dashboard Mentor: Review Modul & Absensi]
     CheckRole -- MAHASISWA --> MhsDashboard[Dashboard Mahasiswa: Presensi, Laporan & Modul]

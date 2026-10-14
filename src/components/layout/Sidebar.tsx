@@ -33,7 +33,7 @@ const navItems: NavItem[] = [
     href: "/dashboard",
     label: "Dashboard",
     icon: <LayoutDashboard className="w-4 h-4" />,
-    roles: ["SUPERADMIN", "KAPRODI", "DPL", "MENTOR_INSTANSI", "MAHASISWA"],
+    roles: ["SUPERADMIN", "DPL", "MENTOR_INSTANSI", "MAHASISWA"],
   },
   {
     href: "/absensi",
@@ -45,25 +45,25 @@ const navItems: NavItem[] = [
     href: "/laporan-harian",
     label: "Laporan Harian",
     icon: <FileText className="w-4 h-4" />,
-    roles: ["MAHASISWA", "DPL", "SUPERADMIN"],
+    roles: ["MAHASISWA", "DPL"],
   },
   {
     href: "/modul-praktikum",
     label: "Modul Praktikum",
     icon: <BookOpen className="w-4 h-4" />,
-    roles: ["MAHASISWA", "DPL", "SUPERADMIN"],
+    roles: ["MAHASISWA", "DPL"],
   },
   {
     href: "/riwayat",
     label: "Riwayat",
     icon: <History className="w-4 h-4" />,
-    roles: ["MAHASISWA", "DPL", "SUPERADMIN"],
+    roles: ["MAHASISWA", "DPL"],
   },
   {
     href: "/kalender",
     label: "Kalender",
     icon: <Calendar className="w-4 h-4" />,
-    roles: ["SUPERADMIN", "KAPRODI", "DPL", "MENTOR_INSTANSI", "MAHASISWA"],
+    roles: ["SUPERADMIN", "DPL", "MENTOR_INSTANSI", "MAHASISWA"],
   },
   // Pembimbing only
   {
@@ -89,32 +89,32 @@ const navItems: NavItem[] = [
     href: "/admin/penempatan",
     label: "Penempatan",
     icon: <Shield className="w-4 h-4" />,
-    roles: ["SUPERADMIN", "KAPRODI"],
+    roles: ["SUPERADMIN"],
   },
   {
     href: "/admin/tempat-magang",
     label: "Tempat Magang",
     icon: <Building className="w-4 h-4" />,
-    roles: ["SUPERADMIN", "KAPRODI"],
+    roles: ["SUPERADMIN"],
   },
   {
     href: "/admin/laporan-global",
     label: "Laporan Global",
     icon: <BarChart3 className="w-4 h-4" />,
-    roles: ["SUPERADMIN", "KAPRODI"],
+    roles: ["SUPERADMIN"],
   },
   // Common
   {
     href: "/profil",
     label: "Profil",
     icon: <User className="w-4 h-4" />,
-    roles: ["SUPERADMIN", "KAPRODI", "DPL", "MENTOR_INSTANSI", "MAHASISWA"],
+    roles: ["SUPERADMIN", "DPL", "MENTOR_INSTANSI", "MAHASISWA"],
   },
   {
     href: "/pengaturan",
     label: "Pengaturan",
     icon: <Settings className="w-4 h-4" />,
-    roles: ["SUPERADMIN", "KAPRODI", "DPL", "MENTOR_INSTANSI", "MAHASISWA"],
+    roles: ["SUPERADMIN", "DPL", "MENTOR_INSTANSI", "MAHASISWA"],
   },
 ];
 
@@ -203,8 +203,6 @@ export default function Sidebar({ isOpen = true, onClose }: SidebarProps) {
             <span className="text-xs text-gray-500">
               {userRole === "SUPERADMIN"
                 ? "Super Administrator"
-                : userRole === "KAPRODI"
-                ? "Kepala Program Studi"
                 : userRole === "DPL"
                 ? "Dosen Pembimbing Lapangan"
                 : userRole === "MENTOR_INSTANSI"
@@ -224,7 +222,7 @@ export default function Sidebar({ isOpen = true, onClose }: SidebarProps) {
             <>
               <div className="mx-4 my-3 border-t border-gray-100" />
               <p className="px-6 text-[10px] uppercase font-semibold text-gray-400 tracking-wider mb-1">
-                {(userRole === "SUPERADMIN" || userRole === "KAPRODI") ? "Administrasi" : "Bimbingan"}
+                {userRole === "SUPERADMIN" ? "Administrasi" : "Bimbingan"}
               </p>
               <div className="space-y-0.5">{roleItems.map(renderItem)}</div>
             </>

@@ -16,7 +16,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const session = await auth();
-  if (!session || !["SUPERADMIN", "KAPRODI"].includes((session.user as any).role)) {
+  if (!session || (session.user as any).role !== "SUPERADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -51,7 +51,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   const session = await auth();
-  if (!session || !["SUPERADMIN", "KAPRODI"].includes((session.user as any).role)) {
+  if (!session || (session.user as any).role !== "SUPERADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -95,7 +95,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   const session = await auth();
-  if (!session || !["SUPERADMIN", "KAPRODI"].includes((session.user as any).role)) {
+  if (!session || (session.user as any).role !== "SUPERADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

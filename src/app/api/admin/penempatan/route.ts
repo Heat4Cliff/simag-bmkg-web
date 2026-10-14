@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 
 export async function GET() {
   const session = await auth();
-  if (!["SUPERADMIN", "KAPRODI"].includes((session?.user as { role?: string })?.role ?? "")) {
+  if ((session?.user as { role?: string })?.role !== "SUPERADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -65,7 +65,7 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   const session = await auth();
-  if (!["SUPERADMIN", "KAPRODI"].includes((session?.user as { role?: string })?.role ?? "")) {
+  if ((session?.user as { role?: string })?.role !== "SUPERADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

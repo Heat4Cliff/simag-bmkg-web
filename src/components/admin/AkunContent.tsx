@@ -324,7 +324,6 @@ export default function AkunContent() {
                   <option value="MAHASISWA">Mahasiswa / Magang</option>
                   <option value="DPL">DPL / Pembimbing Kampus</option>
                   <option value="MENTOR_INSTANSI">Mentor Instansi</option>
-                  <option value="KAPRODI">Kaprodi</option>
                   <option value="SUPERADMIN">Superadmin</option>
                 </select>
               </div>

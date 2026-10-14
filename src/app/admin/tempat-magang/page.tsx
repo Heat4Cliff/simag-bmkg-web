@@ -12,8 +12,8 @@ export const metadata: Metadata = {
 export default async function TempatMagangPage() {
   const session = await auth();
 
-  // Hanya Superadmin dan Kaprodi yang bisa akses
-  if (!session || !["SUPERADMIN", "KAPRODI"].includes((session.user as any).role)) {
+  // Hanya Superadmin yang bisa akses
+  if (!session || (session.user as any).role !== "SUPERADMIN") {
     redirect("/dashboard");
   }
 

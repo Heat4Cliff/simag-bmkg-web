@@ -13,7 +13,7 @@ const tempatMagangSchema = z.object({
 
 export async function GET(request: Request) {
   const session = await auth();
-  if (!session || !["SUPERADMIN", "KAPRODI"].includes((session.user as any).role)) {
+  if (!session || (session.user as any).role !== "SUPERADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const session = await auth();
-  if (!session || !["SUPERADMIN", "KAPRODI"].includes((session.user as any).role)) {
+  if (!session || (session.user as any).role !== "SUPERADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
