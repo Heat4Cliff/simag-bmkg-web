@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { id } = await params;
 
   try {
     const data = await req.json();
@@ -15,7 +17,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     }
 
     const agenda = await prisma.jadwalKegiatan.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     if (!agenda) {
@@ -45,13 +47,15 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { id } = await params;
+
   try {
     const agenda = await prisma.jadwalKegiatan.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     if (!agenda) {
@@ -66,7 +70,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     }
 
     await prisma.jadwalKegiatan.delete({
-      where: { id: params.id }
+      where: { id }
     });
 
     return NextResponse.json({ message: "Agenda berhasil dihapus" });
