@@ -46,6 +46,7 @@ next-env.d.ts
 *.zip
 /backups/
 /scratch/
+/logs/
 /stitch_interna_unugha_internship_app/
 public/uploads/
 
