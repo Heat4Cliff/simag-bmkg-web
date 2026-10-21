@@ -18,19 +18,73 @@ Repositori ini berisi kode dan rancangan SIMAG untuk mengelola kegiatan magang. 
 
 SIMAG bukan program sederhana; sistem ini memiliki autentikasi, beberapa role, API, penyimpanan PostgreSQL, dan modul administrasi. Fokus pengujian tetap dibatasi pada alur presensi dan CRUD peserta. Lima role pada skema adalah `SUPERADMIN`, `KAPRODI`, `DPL`, `MENTOR_INSTANSI`, dan `MAHASISWA`. Dua aktor utama untuk alur yang dibahas adalah **Mahasiswa** dan **SUPERADMIN**; kemampuan role lain belum seluruhnya diverifikasi.
 
+**Status dokumen:** diagram memadukan rancangan final project dengan kode dan bukti pengujian pada workspace lokal. Sebagian perubahan implementasi lokal belum ikut terunggah ke branch `main` GitHub. Uraian role pendukung menunjukkan kondisi dan celah yang ditemukan, bukan klaim bahwa seluruh alurnya telah lulus uji.
+
+### Manajemen role dan otorisasi
+
+Role disimpan sebagai enum pada kolom User.role. Sistem memakai lima nilai: SUPERADMIN, KAPRODI, DPL, MENTOR_INSTANSI, dan MAHASISWA. **Tidak ada pewarisan hak akses otomatis** antarrole: setiap halaman dan API perlu memeriksa role yang diizinkan. Pada proses login, NextAuth memvalidasi identitas, password hash, dan statusAktif, lalu menyimpan id serta role pada sesi JWT. Menu yang terlihat di Sidebar atau Dock hanya navigasi; izin sebenarnya harus ditegakkan kembali di halaman server dan route handler.
+
+Saat SUPERADMIN membuat akun melalui API, data User dan profil yang diperlukan dibuat dalam transaksi. MAHASISWA memperoleh MahasiswaProfile, DPL memperoleh DplProfile, dan MENTOR_INSTANSI memperoleh MentorProfile. KAPRODI dan SUPERADMIN menggunakan User.role tanpa tabel profil khusus. Role akun tidak dapat diganti melalui PATCH setelah dibuat; akun dapat diaktifkan/nonaktifkan, sementara hapus dan nonaktifkan akun sendiri ditolak oleh API akun.
+
+| Role | Alur yang terlihat pada kode | Batas dan status yang perlu dijelaskan saat demo |
+|---|---|---|
+| SUPERADMIN | CRUD akun/profil peserta, penempatan, tempat magang, rekap global, serta review laporan/modul. | CRUD peserta telah tercatat lulus smoke API; interaksi UI dan hak akses modul lain belum diuji menyeluruh. |
+| KAPRODI | API penempatan dan tempat magang mengizinkan role ini; menu juga menampilkan kedua modul dan laporan global. | Middleware memblokir seluruh jalur /admin bagi selain SUPERADMIN. Halaman penempatan dan laporan global serta API laporan global juga masih membatasi SUPERADMIN. Alur web KAPRODI belum selaras. |
+| DPL | Dapat mengambil daftar mahasiswa yang terhubung melalui MahasiswaProfile.dplId; endpoint review laporan/modul menerima role DPL. | Endpoint review per ID belum membuktikan bahwa dokumen milik mahasiswa bimbingannya. Pembatasan kepemilikan harus diperbaiki dan diuji. |
+| MENTOR_INSTANSI | Profil mentor terhubung lewat MahasiswaProfile.mentorId; pengiriman modul membuat notifikasi bagi mentor terkait. | Review laporan/modul pada API web saat ini hanya mengizinkan DPL dan SUPERADMIN. Alur review khusus mentor belum tersedia/terverifikasi. |
+| MAHASISWA | API presensi menegakkan role MAHASISWA; peserta dapat melihat data sendiri serta mengirim laporan dan modul. | Beberapa API laporan/modul baru memeriksa sesi, bukan role MAHASISWA secara khusus. Akses dan pembatasan data lintasrole masih perlu diaudit. |
+
+Pemeriksaan role dilakukan pada tiga lapisan yang perlu konsisten: **navigasi UI**, **middleware/halaman server**, dan **API**. Middleware tidak mencakup jalur /api, sehingga setiap route handler bertanggung jawab sendiri atas otorisasi. Sesi memakai JWT dengan masa berlaku satu jam; perubahan statusAktif diperiksa saat login, sedangkan pencabutan sesi aktif segera setelah akun dinonaktifkan belum ditunjukkan oleh kode.
+
 ## 2. Desain Proyek (UML) (20 poin)
 
 Diagram di bawah menjabarkan **alur final project**: presensi mahasiswa dan pengelolaan peserta/lokasi. Lima role akun tetap dicatat agar cakupan sistem jelas. Garis putus-putus pada use case menunjukkan langkah yang menjadi bagian dari use case lain atau fungsi role pendukung yang belum diverifikasi menyeluruh. Diagram use case ditulis sebagai representasi Mermaid agar dapat dibaca langsung di GitHub.
 
-| Role akun | Hubungan dengan ruang lingkup tugas |
-|---|---|
-| MAHASISWA | Aktor utama: melihat status, presensi MASUK/PULANG, serta mengajukan IZIN/SAKIT. |
-| SUPERADMIN | Aktor utama: CRUD akun/profil peserta, penempatan, dan tempat magang. |
-| KAPRODI | Role pengawasan akademik; API tempat magang mengenali role ini, tetapi keselarasan menu dan izin halaman masih perlu diuji. |
-| DPL | Pembimbing mahasiswa; alur bimbingan/laporan berada di luar fokus pengujian presensi ini. |
-| MENTOR_INSTANSI | Pembimbing instansi; alur review khusus mentor belum diverifikasi pada web. |
 
-### 2.1 Use case — presensi mahasiswa
+### 2.1 Use case menyeluruh — lima role
+
+Diagram ini menempatkan semua role dalam sistem. Garis penuh berarti jalur atau data terkait ditemukan pada kode; garis putus-putus menunjukkan alur yang masih perlu penyelarasan atau verifikasi. Diagram rinci setelahnya memecah presensi dan administrasi agar tetap terbaca.
+
+```mermaid
+flowchart LR
+    SA["SUPERADMIN"]
+    KP["KAPRODI"]
+    DP["DPL"]
+    MT["MENTOR_INSTANSI"]
+    MH["MAHASISWA"]
+    subgraph ADM["Administrasi dan pengawasan"]
+        AKUN(["CRUD akun dan profil"])
+        TEMPAT(["Kelola tempat dan radius"])
+        TEMPATAPI(["Akses API penempatan/tempat"])
+        GLOBAL(["Laporan global"])
+    end
+    subgraph BIM["Bimbingan dan dokumen"]
+        BINA(["Lihat mahasiswa bimbingan"])
+        REVIEW(["Review laporan dan modul"])
+        NOTIF(["Terima notifikasi modul"])
+        MENTORREVIEW(["Review mentor pada web"])
+    end
+    subgraph PESERTA["Aktivitas peserta"]
+        ABSEN(["Presensi MASUK/PULANG atau IZIN/SAKIT"])
+        DOKUMEN(["Kirim laporan dan modul"])
+        STATUS(["Lihat status pribadi"])
+    end
+    SA --> AKUN
+    SA --> TEMPAT
+    SA --> GLOBAL
+    SA --> REVIEW
+    KP --> TEMPATAPI
+    KP -. menu admin belum selaras .-> GLOBAL
+    DP --> BINA
+    DP --> REVIEW
+    MT --> NOTIF
+    MT -. review web belum tersedia .-> MENTORREVIEW
+    MH --> ABSEN
+    MH --> DOKUMEN
+    MH --> STATUS
+```
+
+### 2.2 Use case — presensi mahasiswa
 
 ```mermaid
 flowchart LR
@@ -68,7 +122,7 @@ flowchart LR
 
 Untuk HADIR, foto dan GPS wajib. Server menghitung jarak terhadap lokasi tempat magang yang tersimpan pada profil peserta. Presensi PULANG hanya dapat dilakukan sesudah MASUK dan sebelum PULANG lain tercatat pada hari yang sama. IZIN/SAKIT memerlukan keterangan **atau** lampiran; GPS tidak diwajibkan oleh API untuk kedua jenis itu.
 
-### 2.2 Use case — administrasi peserta dan lokasi
+### 2.3 Use case — administrasi peserta dan lokasi
 
 ```mermaid
 flowchart LR
@@ -106,7 +160,51 @@ flowchart LR
 
 Endpoint akun membatasi operasi CRUD kepada SUPERADMIN. Endpoint tempat magang mengizinkan SUPERADMIN dan KAPRODI; akses KAPRODI pada halaman web belum dinyatakan lulus uji. Perubahan role akun setelah dibuat ditolak agar profil terkait tetap konsisten.
 
-### 2.3 Sequence diagram — presensi HADIR
+### 2.4 Sequence diagram — siklus lintas lima role
+
+Sequence ini memperlihatkan interaksi lima role dalam satu siklus magang. Catatan pada lifeline menandai bagian yang belum konsisten; keberadaan langkah di diagram tidak berarti seluruh alur sudah lulus uji.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor SA as SUPERADMIN
+    actor KP as KAPRODI
+    actor MH as MAHASISWA
+    actor DP as DPL
+    actor MT as MENTOR_INSTANSI
+    participant UI as Web SIMAG
+    participant Gate as Middleware
+    participant API as Next.js API
+    participant DB as PostgreSQL
+    SA->>UI: Buat akun, tempat magang, dan penempatan
+    UI->>API: POST akun dan PATCH penempatan
+    API->>DB: Simpan User, profil, dan relasi
+    DB-->>API: Data tersimpan
+    API-->>UI: Hasil administrasi
+    KP->>UI: Buka menu penempatan atau laporan global
+    UI->>Gate: GET jalur /admin
+    Gate-->>KP: Redirect ke dashboard
+    Note over KP,API: API penempatan/tempat menerima KAPRODI, halaman web belum selaras
+    MH->>UI: Presensi MASUK atau PULANG
+    UI->>API: POST /api/absensi
+    API->>DB: Simpan atau perbarui Absensi
+    API-->>UI: Hasil presensi
+    MH->>UI: Kirim modul praktikum
+    UI->>API: POST /api/modul-praktikum
+    API->>DB: Simpan modul dan notifikasi pembimbing
+    API-->>MT: Notifikasi modul untuk mentor terkait
+    API-->>UI: Hasil pengiriman
+    DP->>UI: Lihat mahasiswa bimbingan
+    UI->>API: GET /api/pembimbing/mahasiswa
+    API->>DB: Filter MahasiswaProfile berdasarkan dplId
+    DB-->>API: Daftar mahasiswa terkait
+    API-->>UI: Data bimbingan
+    DP->>API: PATCH review laporan atau modul
+    Note over DP,API: Role DPL dicek, kepemilikan dokumen belum dicek per ID
+    Note over MT,API: API web belum menyediakan review khusus MENTOR_INSTANSI
+```
+
+### 2.5 Sequence diagram — presensi HADIR
 
 ```mermaid
 sequenceDiagram
@@ -149,7 +247,7 @@ sequenceDiagram
 
 File foto saat ini ditulis sebelum operasi database. Jika penyimpanan database gagal setelah file berhasil ditulis, pembersihan file yatim masih perlu ditangani; diagram menunjukkan urutan kode saat ini, bukan transaksi file dan database yang atomik.
 
-### 2.4 Sequence diagram — CRUD peserta oleh SUPERADMIN
+### 2.6 Sequence diagram — CRUD peserta oleh SUPERADMIN
 
 ```mermaid
 sequenceDiagram
@@ -192,7 +290,34 @@ sequenceDiagram
 
 Pencarian peserta berlangsung pada daftar yang diterima UI; endpoint GET membaca daftar akun. Validasi gagal menghasilkan respons kesalahan dan tidak boleh ditafsirkan sebagai operasi berhasil.
 
-### 2.5 Activity diagram — keputusan presensi
+### 2.7 Activity diagram — keputusan berdasarkan role
+
+```mermaid
+flowchart TD
+    START(["Pengguna masuk"]) --> AUTH{"Sesi dan role valid?"}
+    AUTH -- Tidak --> LOGIN["Kembali ke login"]
+    AUTH -- Ya --> ROLE{"Role akun"}
+    ROLE -- SUPERADMIN --> SA["Kelola akun, profil, tempat, dan penempatan"]
+    SA --> GLOBAL["Lihat rekap global atau review dokumen"]
+    ROLE -- KAPRODI --> KP["Buka menu pengawasan dan penempatan"]
+    KP --> KPGAP{"Jalur /admin diizinkan middleware?"}
+    KPGAP -- Tidak --> KPBLOCK["Dialihkan ke dashboard; perlu penyelarasan"]
+    ROLE -- DPL --> DP["Ambil mahasiswa dengan dplId terkait"]
+    DP --> DPREVIEW["Review laporan atau modul"]
+    DPREVIEW --> DPGAP["Pemeriksaan kepemilikan per ID perlu dilengkapi"]
+    ROLE -- MENTOR_INSTANSI --> MT["Terima notifikasi modul dari peserta terkait"]
+    MT --> MTGAP["Review mentor pada web belum tersedia"]
+    ROLE -- MAHASISWA --> MH["Lihat status dan kirim presensi"]
+    MH --> DOK["Kirim laporan atau modul"]
+    GLOBAL --> END(["Selesai"])
+    KPBLOCK --> END
+    DPGAP --> END
+    MTGAP --> END
+    DOK --> END
+    LOGIN --> END
+```
+
+### 2.8 Activity diagram — keputusan presensi
 
 ```mermaid
 flowchart TD
@@ -243,7 +368,9 @@ flowchart LR
     subgraph AKTOR["Pengguna"]
         M["Mahasiswa"]
         A["SUPERADMIN"]
-        R["KAPRODI / DPL / Mentor"]
+        K["KAPRODI"]
+        D["DPL"]
+        T["MENTOR_INSTANSI"]
     end
     subgraph CLIENT["Browser"]
         UI["Next.js UI"]
@@ -255,6 +382,8 @@ flowchart LR
             API1["API /api/absensi"]
             API2["API /api/admin/akun"]
             API3["API /api/admin/tempat-magang"]
+            API4["API /api/admin/penempatan"]
+            API5["API laporan, modul, pembimbing"]
             RULES["Validasi input, radius, hari libur, urutan"]
             ORM["Prisma ORM"]
         end
@@ -263,15 +392,22 @@ flowchart LR
     end
     M --> UI
     A --> UI
-    R -. sesuai izin role .-> UI
+    K -. menu perlu penyelarasan .-> UI
+    D --> UI
+    T --> UI
     DEVICE -->|"foto dan koordinat"| UI
     UI -->|"localhost:3391 ke 3200"| AUTH
     AUTH --> API1
     AUTH --> API2
     AUTH --> API3
+    AUTH --> API4
+    AUTH --> API5
     API1 --> RULES
     API2 --> ORM
     API3 --> ORM
+    API4 --> ORM
+    API5 --> ORM
+    API5 -->|"lampiran"| FILES
     RULES --> ORM
     RULES -->|"file bukti"| FILES
     ORM -->|"metadata dan transaksi"| DB
@@ -334,6 +470,86 @@ erDiagram
 ```
 
 Satu pengguna dapat memiliki profil sesuai role. Satu peserta ditempatkan pada paling banyak satu tempat magang aktif dalam model ini. Tabel Absensi memiliki batas unik untuk pasangan pengguna dan tanggal, sehingga satu catatan harian dapat memuat jam MASUK dan PULANG.
+
+### 3.3 Rincian database, relasi, dan integritas data
+
+PostgreSQL 16 menyimpan data relasional; Prisma 7 memetakan model pada [prisma/schema.prisma](prisma/schema.prisma) ke tabel. User adalah sumber identitas dan role. Profil khusus dipisah agar atribut NIM, NIP, mentor, serta penempatan tidak dicampur ke setiap akun. KAPRODI dan SUPERADMIN tidak memiliki tabel profil khusus; keduanya dibedakan oleh User.role.
+
+| Model / tabel | Kunci dan relasi penting | Fungsi |
+|---|---|---|
+| User / users | id sebagai PK; email dan username unik; role dan statusAktif | Identitas login untuk semua role. Password disimpan sebagai hash, bukan teks biasa. |
+| MahasiswaProfile / mahasiswa_profiles | userId unik ke User; dplId, mentorId, tempatMagangId boleh kosong | Data peserta, NIM, prodi, periode, kontak, pembimbing, dan lokasi magang aktif. |
+| DplProfile / dpl_profiles | userId unik ke User | Identitas DPL; satu DPL dapat terhubung ke banyak MahasiswaProfile. |
+| MentorProfile / mentor_profiles | userId unik ke User | Identitas mentor instansi; satu mentor dapat membimbing banyak peserta. |
+| TempatMagang / tempat_magang | id sebagai PK; direferensikan MahasiswaProfile | Nama/alamat instansi, titik GPS kantor, dan radiusAbsensiMeter. |
+| Absensi / absensi | userId ke User; pasangan userId + tanggal unik | Satu catatan harian berisi status, MASUK/PULANG, GPS, jarak, serta path foto/lampiran. |
+| LaporanHarian / laporan_harian | userId ke User | Catatan kegiatan dan status review beserta reviewer/waktu review. |
+| ModulPraktikum / modul_praktikum | userId ke User; kategoriId ke KategoriModul | Dokumen tugas praktikum, status review, dan lampiran. |
+| Notifikasi / notifikasi | userId ke User | Pesan untuk pembimbing/mentor, misalnya saat modul peserta dikirim. |
+| Session dan AuditLog | Keduanya terhubung ke User | Struktur untuk sesi/audit tersedia pada skema; sesi web saat ini memakai JWT dan penulisan audit tidak boleh diasumsikan terjadi di semua aksi. |
+
+**Kardinalitas dan alur baca:** User MAHASISWA memiliki paling banyak satu MahasiswaProfile. Profil tersebut menunjuk paling banyak satu tempat magang, satu DPL, dan satu mentor pada suatu waktu; masing-masing pembimbing atau tempat magang dapat menangani banyak peserta. Absensi, LaporanHarian, dan ModulPraktikum mereferensikan User secara langsung. Saat presensi, API mengambil MahasiswaProfile beserta TempatMagang, menghitung jarak GPS terhadap latitudeKantor/longitudeKantor, membandingkannya dengan radiusAbsensiMeter, lalu membaca Absensi untuk tanggal Jakarta sebelum membuat catatan MASUK atau memperbarui PULANG.
+
+**Aturan integritas dan batas model:**
+
+1. Unique constraint pada User.email, User.username, dan setiap profil.userId mencegah duplikasi identitas/profil. Constraint gabungan Absensi(userId, tanggal) mencegah lebih dari satu baris presensi harian per akun.
+2. NIM pada MahasiswaProfile bersifat opsional dan **belum diberi unique constraint** pada skema. Validasi NIM unik, bila menjadi aturan kampus, masih perlu dirancang dan diuji.
+3. Relasi User ke profil, presensi, laporan, modul, dan beberapa data turunannya memakai onDelete: Cascade. Hapus fisik akun dapat ikut menghapus riwayat terkait; statusAktif menyediakan alternatif menonaktifkan akun tanpa menghapus barisnya.
+4. Penempatan saat ini disimpan sebagai foreign key pada MahasiswaProfile. Tidak ada tabel riwayat penempatan terpisah, sehingga perpindahan DPL/mentor/tempat tidak otomatis meninggalkan histori relasi lama.
+5. reviewedBy pada laporan/modul adalah kolom String opsional, bukan foreign key Prisma ke User. Pemeriksaan reviewer dan pembatasan mahasiswa bimbingan perlu ditegakkan di aplikasi.
+6. Foto presensi dan lampiran disimpan pada volume simag-uploads, sedangkan database hanya menyimpan path file. Backup database saja tidak cukup untuk memulihkan seluruh bukti.
+7. Tidak ada @@index tambahan untuk dplId, mentorId, tempatMagangId, atau tanggal laporan pada skema saat ini. Kebutuhan indeks harus dievaluasi dari ukuran data dan pola query sebelum dipakai pada skala lebih besar.
+
+### 3.4 ERD dokumen, review, dan notifikasi
+
+```mermaid
+erDiagram
+    USER ||--o{ LAPORAN_HARIAN : menulis
+    USER ||--o{ MODUL_PRAKTIKUM : mengirim
+    USER ||--o{ NOTIFIKASI : menerima
+    USER ||--o{ AUDIT_LOG : terkait
+    KATEGORI_MODUL ||--o{ MODUL_PRAKTIKUM : mengelompokkan
+
+    USER {
+        string id PK
+        string email UK
+        string role
+        boolean statusAktif
+    }
+    LAPORAN_HARIAN {
+        string id PK
+        string userId FK
+        date tanggal
+        string status
+        string reviewedBy
+        datetime reviewedAt
+    }
+    KATEGORI_MODUL {
+        string id PK
+        string namaKategori
+    }
+    MODUL_PRAKTIKUM {
+        string id PK
+        string userId FK
+        string kategoriId FK
+        string statusReview
+        string reviewedBy
+    }
+    NOTIFIKASI {
+        string id PK
+        string userId FK
+        boolean dibaca
+        string link
+    }
+    AUDIT_LOG {
+        string id PK
+        string userId FK
+        string aksi
+        string entitas
+    }
+```
+
+ERD ini memperlihatkan relasi yang didefinisikan pada skema, bukan jaminan bahwa setiap alur review atau audit sudah berjalan. Kolom reviewedBy sengaja tidak digambar sebagai garis relasi karena skema belum mendeklarasikan foreign key untuknya.
 
 ## 4. Tech Stack (20 poin)
 
