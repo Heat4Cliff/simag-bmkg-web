@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { Plus, FileText, Search, Filter, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, FileText, Search, Filter, Loader2, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { getStatusLaporanColor, getStatusLabel } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface Laporan {
   id: string;
@@ -19,6 +20,7 @@ export default function LaporanContent() {
   const role = (session?.user as { role?: string })?.role;
   const [laporan, setLaporan] = useState<Laporan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("SEMUA");
   const [currentPage, setCurrentPage] = useState(1);
@@ -31,6 +33,42 @@ export default function LaporanContent() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  const handleDownloadGlobal = async () => {
+    try {
+      setDownloading(true);
+      toast.info("Sedang menyiapkan dokumen logbook lengkap...");
+      const res = await fetch("/api/laporan-harian/export-global");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: "Gagal mengunduh logbook" }));
+        toast.error(errorData.error || "Gagal mengunduh logbook");
+        return;
+      }
+      const blob = await res.blob();
+      const contentDisposition = res.headers.get("Content-Disposition");
+      let filename = "Logbook_Lengkap_Magang.docx";
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (match && match[1]) {
+          filename = match[1];
+        }
+      }
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("Dokumen logbook berhasil diunduh!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Terjadi kesalahan saat mengunduh dokumen");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const filtered = laporan.filter((l) => {
     const matchSearch = l.judul.toLowerCase().includes(search.toLowerCase());
@@ -54,7 +92,7 @@ export default function LaporanContent() {
         <span className="text-[#1E8A3C] font-medium">Laporan Harian</span>
       </div>
 
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
         <div>
           <h1 className="text-xl font-bold text-gray-800">Laporan Harian</h1>
           <p className="text-sm text-gray-500 mt-0.5">
@@ -62,12 +100,28 @@ export default function LaporanContent() {
           </p>
         </div>
         {role === "MAHASISWA" && (
-          <Link
-            href="/laporan-harian/baru"
-            className="flex items-center gap-2 bg-[#1E8A3C] text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-[#0d5cc5] transition-colors shadow-sm"
-          >
-            <Plus className="w-4 h-4" /> Buat Laporan
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleDownloadGlobal}
+              disabled={downloading}
+              className="flex items-center gap-2 bg-white text-gray-700 border border-gray-200 text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm disabled:opacity-50"
+              title="Unduh seluruh rekap logbook harian dari hari pertama hingga selesai"
+            >
+              {downloading ? (
+                <Loader2 className="w-4 h-4 animate-spin text-[#1E8A3C]" />
+              ) : (
+                <Download className="w-4 h-4 text-[#1E8A3C]" />
+              )}
+              <span className="hidden sm:inline">Download Logbook Global</span>
+              <span className="sm:hidden">Logbook</span>
+            </button>
+            <Link
+              href="/laporan-harian/baru"
+              className="flex items-center gap-2 bg-[#1E8A3C] text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-[#166c2f] transition-colors shadow-sm whitespace-nowrap"
+            >
+              <Plus className="w-4 h-4" /> <span>Buat Laporan</span>
+            </Link>
+          </div>
         )}
       </div>
 
