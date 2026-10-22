@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, GraduationCap, AlertCircle, Loader2 } from "lucide-react";
+import { Search, GraduationCap, AlertCircle, Loader2, Download } from "lucide-react";
 import Link from "next/link";
 import { formatTanggalCompact } from "@/lib/utils";
 
@@ -94,12 +94,23 @@ export default function DataMahasiswaContent() {
                 </div>
               </div>
 
-              <Link 
-                href={`/laporan-harian?search=${m.nama}`}
-                className="mt-4 w-full block text-center bg-gray-50 hover:bg-gray-100 text-[#1E8A3C] font-semibold py-2 rounded-xl text-sm transition-colors"
-              >
-                Lihat Laporan
-              </Link>
+              <div className="mt-4 flex gap-2">
+                <Link 
+                  href={`/laporan-harian?search=${m.nama}`}
+                  className="flex-1 text-center bg-gray-50 hover:bg-gray-100 text-[#1E8A3C] font-semibold py-2 rounded-xl text-sm transition-colors flex items-center justify-center"
+                >
+                  Lihat Laporan
+                </Link>
+                <a
+                  href={`/api/laporan-harian/export-global?userId=${m.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Unduh Rekap Logbook Lengkap (DOCX)"
+                  className="px-3 py-2 bg-green-50 hover:bg-green-100 text-[#1E8A3C] rounded-xl flex items-center justify-center transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                </a>
+              </div>
             </div>
           ))
         )}

@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, Search, FileText, ChevronRight, ChevronLeft } from "lucide-react";
+import { Loader2, Search, FileText, ChevronRight, ChevronLeft, Download } from "lucide-react";
 import ApexChartWrapper from "@/components/ui/ApexChartWrapper";
 import Link from "next/link";
 import { getStatusLaporanColor, getStatusLabel, formatTanggal } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface LaporanRiwayat {
   id: string;
@@ -26,6 +27,7 @@ const COLORS: Record<string, string> = {
 export default function RiwayatLaporanContent() {
   const [riwayat, setRiwayat] = useState<LaporanRiwayat[]>([]);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 9;
@@ -37,6 +39,42 @@ export default function RiwayatLaporanContent() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  const handleDownloadGlobal = async () => {
+    try {
+      setDownloading(true);
+      toast.info("Sedang menyiapkan dokumen logbook lengkap...");
+      const res = await fetch("/api/laporan-harian/export-global");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: "Gagal mengunduh logbook" }));
+        toast.error(errorData.error || "Gagal mengunduh logbook");
+        return;
+      }
+      const blob = await res.blob();
+      const contentDisposition = res.headers.get("Content-Disposition");
+      let filename = "Logbook_Lengkap_Magang.docx";
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (match && match[1]) {
+          filename = match[1];
+        }
+      }
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("Dokumen logbook berhasil diunduh!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Terjadi kesalahan saat mengunduh dokumen");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const filtered = riwayat.filter(r => {
     const searchLower = search.toLowerCase();
@@ -75,6 +113,19 @@ export default function RiwayatLaporanContent() {
           <h1 className="text-xl font-bold text-gray-800">Riwayat Laporan Harian</h1>
           <p className="text-sm text-gray-500 mt-0.5">Daftar seluruh laporan kegiatan yang pernah Anda buat.</p>
         </div>
+        <button
+          onClick={handleDownloadGlobal}
+          disabled={downloading}
+          className="flex items-center gap-2 bg-white text-gray-700 border border-gray-200 text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm disabled:opacity-50 self-start sm:self-auto"
+          title="Unduh seluruh rekap logbook harian dari hari pertama hingga selesai"
+        >
+          {downloading ? (
+            <Loader2 className="w-4 h-4 animate-spin text-[#1E8A3C]" />
+          ) : (
+            <Download className="w-4 h-4 text-[#1E8A3C]" />
+          )}
+          <span>Download Logbook Global</span>
+        </button>
       </div>
 
       {!loading && chartData.length > 0 && (
