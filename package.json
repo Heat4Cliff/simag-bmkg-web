@@ -7,6 +7,7 @@
 		"build": "next build --webpack",
 		"start": "next start -p 3200 -H ::",
 		"lint": "eslint",
+		"test:unit": "tsx --test tests/unit/core.test.ts",
 		"db:push": "prisma db push",
 		"db:seed": "prisma db seed",
 		"db:studio": "prisma studio",
@@ -68,6 +69,7 @@
 		"jsrepo": "^3.8.1",
 		"tailwindcss": "^4",
 		"ts-node": "^10.9.2",
+		"tsx": "^4.23.15",
 		"typescript": "^5"
 	}
 }

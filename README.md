@@ -8,7 +8,7 @@
 | Kelas | IF7A |
 | Ketua kelompok | Muhammad Arif Rivandi — NIM: **23EO10005** |
 | Anggota | Mohammad Alwan Abbas Abdillah — NIM: **23EO10030** |
-| Anggota | Ian Alfian — NIM: **23EO1039** |
+| Anggota | Ian Alfian Fadilah — NIM: **23EO10039** |
 | Anggota | Fattatunnida Amalia Rahma — NIM: **23EO10010** |
 | Anggota | Zainul Mutawakkil — NIM: **23EO10003** |
 
@@ -567,7 +567,18 @@ Contoh Flutter, Go, MongoDB, dan Supabase pada template tugas **bukan** stack pr
 
 - Repositori: [Heat4Cliff/simag-bmkg-web](https://github.com/Heat4Cliff/simag-bmkg-web).
 - Ketua kelompok bertanggung jawab mengunggah versi yang disepakati dan memimpin demonstrasi UTS.
-- Bukti lokal yang telah dicatat: **8/8 unit test** dan **9/9 pemeriksaan smoke API** lulus. Smoke test mencakup CRUD peserta, penolakan presensi tanpa GPS, dan penolakan lokasi di luar radius.
+- Bukti lokal dari tahap sebelumnya: **8/8 unit test** dan **9/9 pemeriksaan smoke API** tercatat lulus. Smoke test mencakup CRUD peserta, penolakan presensi tanpa GPS, dan penolakan lokasi di luar radius. Skrip dan hasil tahap sebelumnya tidak tersedia di commit ini; pengujian yang dapat direproduksi dari repo dijelaskan pada bagian berikut.
 - Pemeriksaan yang masih diperlukan: presensi di dalam radius dengan GPS dan kamera nyata, interaksi UI Admin, serta hak akses seluruh lima role.
 
 Alur demo: jalankan aplikasi melalui Docker di `http://localhost:3391`, tampilkan role dan data dummy, jelaskan diagram, demonstrasikan CRUD peserta serta validasi presensi yang sudah teruji, lalu tunjukkan hasil uji dan batasnya. Status **PASS** pada pengujian lokal tidak berarti seluruh fitur SIMAG telah lulus uji.
+
+## 6. Tugas Pertemuan 9 — Unit Testing Final Project
+
+Unit test yang dapat dijalankan dari repo berada di [`tests/unit/core.test.ts`](tests/unit/core.test.ts). Pengujian mencakup jarak GPS dan radius 500 meter, kalender presensi (libur nasional dan akhir pekan), hari peringatan, validasi login/password/laporan, serta label status. Tes memanggil fungsi asli di `src/lib` tanpa database, Docker, atau akun pengguna.
+
+```bash
+npm ci
+npm run test:unit
+```
+
+Hasil pada 28 Oktober 2026: **19 test lulus, 0 gagal** di Node.js 25.2.1. Workflow [unit-tests.yml](.github/workflows/unit-tests.yml) menjalankan perintah yang sama di Node.js 22 untuk setiap push dan pull request. Pengujian ini tidak mengklaim telah memeriksa route API, integrasi PostgreSQL, kamera/GPS perangkat, maupun seluruh hak akses role.
