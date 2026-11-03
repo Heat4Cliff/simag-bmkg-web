@@ -50,11 +50,13 @@ export async function POST(request: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await request.json();
-  const { tanggal, judul, deskripsi, kendala } = body;
+  const { tanggal, judul, deskripsi, kendala, asDraft } = body;
 
   if (!tanggal || !judul || !deskripsi) {
     return NextResponse.json({ error: "Data tidak lengkap" }, { status: 400 });
   }
+
+  const statusLaporan = asDraft ? "DRAFT" : "TERKIRIM";
 
   const laporan = await prisma.laporanHarian.create({
     data: {
@@ -63,9 +65,12 @@ export async function POST(request: Request) {
       judul,
       deskripsi,
       kendala: kendala || null,
-      status: "TERKIRIM",
+      status: statusLaporan,
     },
   });
 
-  return NextResponse.json({ laporan, message: "Laporan berhasil dikirim!" });
+  return NextResponse.json({
+    laporan,
+    message: asDraft ? "Laporan berhasil disimpan sebagai draft!" : "Laporan berhasil dikirim!",
+  });
 }

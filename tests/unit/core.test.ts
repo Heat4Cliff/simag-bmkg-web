@@ -122,6 +122,7 @@ describe("validasi input pengguna dan laporan", () => {
 describe("label status", () => {
   it("menerjemahkan status presensi dan laporan", () => {
     assert.equal(getStatusLabel("HADIR"), "Hadir");
+    assert.equal(getStatusLabel("TELAT"), "Terlambat");
     assert.equal(getStatusLabel("REVISI"), "Perlu Revisi");
   });
 

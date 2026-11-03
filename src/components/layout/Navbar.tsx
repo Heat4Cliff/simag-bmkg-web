@@ -65,6 +65,7 @@ export default function Navbar({ notifCount = 0 }: NavbarProps) {
           {/* Avatar + Dropdown */}
           <div className="relative">
             <button
+              aria-label="Menu Profil Pengguna"
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="flex items-center gap-2 pl-2 pr-1 py-1 rounded-full hover:bg-white/10 transition-colors"
             >

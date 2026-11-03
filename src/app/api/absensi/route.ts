@@ -130,6 +130,20 @@ export async function POST(request: Request) {
             { status: 400 }
           );
         }
+
+        // Cek keterlambatan (batas masuk jam 07:00:00 WIB)
+        const formatterWib = new Intl.DateTimeFormat("en-GB", {
+          timeZone: "Asia/Jakarta",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        });
+        const [wibHour, wibMinute, wibSecond] = formatterWib.format(jamSekarang).split(":").map(Number);
+        const isTerlambat = wibHour > 7 || (wibHour === 7 && (wibMinute > 0 || wibSecond > 0));
+        statusAbsensi = isTerlambat ? "TELAT" : "HADIR";
+        const keteranganFinal = keterangan || (isTerlambat ? "Terlambat" : null);
+
         await prisma.absensi.create({
           data: {
             userId,
@@ -141,7 +155,7 @@ export async function POST(request: Request) {
             jarakDariKantorMeter: Math.round(jarak),
             lokasiValid: lokasiValid,
             status: statusAbsensi,
-            keterangan: keterangan || null,
+            keterangan: keteranganFinal,
           },
         });
       } else if (tipe === "PULANG") {

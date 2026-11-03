@@ -96,8 +96,8 @@ export function getStatusLaporanColor(status: string) {
 export function getStatusAbsensiColor(status: string) {
   const map: Record<string, string> = {
     HADIR: "bg-green-100 text-green-700",
-    TELAT: "bg-yellow-100 text-yellow-700",
-    IZIN: "bg-green-100 text-green-700",
+    TELAT: "bg-amber-100 text-amber-700",
+    IZIN: "bg-blue-100 text-blue-700",
     SAKIT: "bg-purple-100 text-purple-700",
     ALPA: "bg-red-100 text-red-700",
   };
@@ -113,7 +113,7 @@ export function getStatusLabel(status: string): string {
     REVISI: "Perlu Revisi",
     DITOLAK: "Ditolak",
     HADIR: "Hadir",
-    TELAT: "Telat",
+    TELAT: "Terlambat",
     IZIN: "Izin",
     SAKIT: "Sakit",
     ALPA: "Alpa",

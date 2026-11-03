@@ -1,0 +1,94 @@
+name: SIMAG Automated Testing (Unit, Integration, BDD & Usability)
+
+on:
+  push:
+    branches:
+      - main
+      - "feat/**"
+  pull_request:
+    branches:
+      - main
+
+env:
+  DATABASE_URL: "postgresql://postgres:test_password@127.0.0.1:5432/simag_bmkg_test"
+  TEST_DATABASE_URL: "postgresql://postgres:test_password@127.0.0.1:5432/simag_bmkg_test"
+  NEXTAUTH_URL: "http://localhost:3200"
+  AUTH_URL: "http://localhost:3200"
+  TEST_BASE_URL: "http://localhost:3200"
+  NEXTAUTH_SECRET: "ci-test-secret-key-simag-bmkg-non-production-2026"
+  AUTH_SECRET: "ci-test-secret-key-simag-bmkg-non-production-2026"
+  AUTH_TRUST_HOST: "true"
+  TZ: "Asia/Jakarta"
+
+jobs:
+  test-suite:
+    name: Integration, BDD & E2E Testing
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: simag_bmkg_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Run Unit Tests
+        run: npm run test:unit
+
+      - name: Run Integration Tests (Isolated PostgreSQL Test DB)
+        run: npm run test:integration
+
+      - name: Install Playwright Chromium Browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Build Next.js Application
+        run: npm run build
+
+      - name: Start SIMAG Server & Execute BDD + E2E Usability Tests
+        run: |
+          npm run start &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sSf http://localhost:3200/login > /dev/null; then
+              echo "SIMAG server is up on port 3200"
+              break
+            fi
+            sleep 1
+          done
+          npm run test:bdd
+          npm run test:e2e
+          npm run test:report
+          kill $SERVER_PID || true
+
+      - name: Upload Test Reports & Failure Screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: simag-test-reports
+          path: |
+            tests/reports/
+          retention-days: 14

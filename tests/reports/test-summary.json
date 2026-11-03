@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-11-03T23:43:09.243Z",
+  "project": "SIMAG BMKG",
+  "bdd": {
+    "features": 3,
+    "scenarios": {
+      "total": 11,
+      "passed": 11,
+      "failed": 0
+    },
+    "steps": {
+      "total": 52,
+      "passed": 52,
+      "failed": 0,
+      "skipped": 0
+    },
+    "reportHtml": "tests/reports/cucumber-report.html",
+    "reportJson": "tests/reports/cucumber-report.json"
+  },
+  "screenshots": [
+    "usability-task1-dashboard-desktop.png",
+    "usability-task4-form-laporan.png",
+    "usability-task5-mobile-responsive.png"
+  ]
+}

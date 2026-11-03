@@ -38,8 +38,8 @@ export default function RiwayatAbsensiContent() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "HADIR": return "bg-green-100 text-green-700";
-      case "TELAT": return "bg-orange-100 text-orange-700";
-      case "IZIN": return "bg-green-100 text-green-700";
+      case "TELAT": return "bg-amber-100 text-amber-700";
+      case "IZIN": return "bg-blue-100 text-blue-700";
       case "SAKIT": return "bg-purple-100 text-purple-700";
       default: return "bg-red-100 text-red-700"; // ALPA
     }
@@ -196,7 +196,9 @@ export default function RiwayatAbsensiContent() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-500 text-xs capitalize max-w-[200px]">
                       <div className="flex flex-col gap-1">
-                        <span className="truncate" title={item.keterangan || ""}>{item.keterangan?.includes("Shift") ? "Hadir" : (item.keterangan || (item.status === "HADIR" ? "Hadir" : "-"))}</span>
+                        <span className="truncate" title={item.keterangan || ""}>
+                          {item.keterangan || (item.status === "TELAT" ? "Terlambat" : (item.status === "HADIR" ? "Hadir" : "-"))}
+                        </span>
                         {item.lampiranUrl && (
                           <a href={item.lampiranUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
                             Lihat Surat
@@ -206,7 +208,7 @@ export default function RiwayatAbsensiContent() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <span className={`inline-block px-2.5 py-1 text-[11px] font-bold rounded-full ${getStatusColor(item.status)}`}>
-                        {item.status}
+                        {item.status === "TELAT" ? "TERLAMBAT" : item.status}
                       </span>
                     </td>
                   </tr>
