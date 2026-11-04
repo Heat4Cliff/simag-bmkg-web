@@ -4,13 +4,16 @@ import { Browser, BrowserContext, Page } from "playwright";
 import fs from "fs/promises";
 import path from "path";
 import { launchTestBrowser } from "../support/world";
-import { ensureBddTestUser, cleanupBddTestUser } from "../support/setup-test-db";
+import {
+  ensureBddTestUser,
+  cleanupBddTestUser,
+  getTestBaseUrl,
+  startIsolatedTestServer,
+  stopIsolatedTestServer,
+} from "../support/setup-test-db";
 import { TEST_USERS } from "../fixtures/test-data";
 
-const BASE_URL =
-  process.env.TEST_BASE_URL ||
-  process.env.NEXTAUTH_URL ||
-  "http://localhost:3200";
+const BASE_URL = getTestBaseUrl();
 
 const SCREENSHOT_DIR = path.join(process.cwd(), "tests", "reports", "screenshots");
 
@@ -21,6 +24,7 @@ describe("SIMAG BMKG — Automated E2E Usability, Responsive Layout & Basic Acce
 
   before(async () => {
     await ensureBddTestUser();
+    await startIsolatedTestServer();
     await fs.mkdir(SCREENSHOT_DIR, { recursive: true });
     browser = await launchTestBrowser();
     context = await browser.newContext({
@@ -50,6 +54,7 @@ describe("SIMAG BMKG — Automated E2E Usability, Responsive Layout & Basic Acce
       await context.close();
     }
     if (browser) await browser.close();
+    await stopIsolatedTestServer();
     await cleanupBddTestUser();
   });
 

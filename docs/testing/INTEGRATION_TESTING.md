@@ -37,47 +37,58 @@ Untuk menjamin **keamanan data produksi (`simag_bmkg`)**:
 
 ---
 
-## 3. Daftar Test Case Integration Testing (18 Kasus Uji)
+## 3. Daftar Test Case Integration Testing (23 Kasus Uji — 5 Suite)
 
-### Suite 1: Integrasi Autentikasi Mobile JWT & Proteksi Endpoint
+### Suite 1: Integrasi Autentikasi, JWT & Otorisasi Bearer Token (6 Kasus Uji)
 | ID | Nama Test Case | Integrasi yang Diverifikasi | Status |
 |----|----------------|-----------------------------|--------|
-| **IT-01** | `POST /api/mobile/auth/login` menerima kredensial valid (email) dan mengembalikan JWT token beserta profil mahasiswa | Request JSON -> Zod `loginSchema` -> Prisma `user.findFirst` + `bcrypt.compare` -> JWT `sign` | **PASS** |
-| **IT-02** | `POST /api/mobile/auth/login` mendukung login menggunakan `username` | Resolusi `identifier` non-email pada database -> kontrak response `{ token, user }` | **PASS** |
-| **IT-03** | `POST /api/mobile/auth/login` menolak password yang salah dengan HTTP `401` | Validasi `bcrypt.compare` gagal -> HTTP `401 Unauthorized` | **PASS** |
-| **IT-04** | `POST /api/mobile/auth/login` menolak payload invalid (password kosong) dengan HTTP `400` | Validasi Zod gagal -> HTTP `400 Bad Request` | **PASS** |
-| **IT-05** | `GET /api/mobile/auth/me` menolak request tanpa header `Authorization` dengan HTTP `401` | Middleware `verifyMobileToken` tanpa header Bearer -> HTTP `401` | **PASS** |
-| **IT-06** | `GET /api/mobile/auth/me` menolak token JWT palsu/expired dengan HTTP `401` | Verifikasi signature JWT gagal -> HTTP `401` | **PASS** |
-| **IT-07** | `GET /api/mobile/auth/me` mengembalikan profil lengkap dari database ketika diberi Bearer token valid | Verifikasi JWT -> query relasi `mahasiswaProfile`, `tempatMagang`, `dpl` di PostgreSQL | **PASS** |
+| **IT-01** | Mengembalikan `400` ketika request login tidak menyertakan email atau password | Validasi input pada `POST /api/mobile/auth/login` | **PASS** |
+| **IT-02** | Mengembalikan `401` ketika kredensial password salah | Verifikasi `bcrypt.compare` gagal -> HTTP `401 Unauthorized` | **PASS** |
+| **IT-03** | Mengembalikan `403` ketika akun berstatus nonaktif (`statusAktif = false`) | Pengecekan status akun aktif di PostgreSQL -> HTTP `403 Forbidden` | **PASS** |
+| **IT-04** | Berhasil login dengan kredensial valid dan mengembalikan token JWT beserta profil mahasiswa | Query relasi `users` + `mahasiswa_profiles` -> JWT `sign` (`200 OK`) | **PASS** |
+| **IT-05** | Menolak akses endpoint terproteksi JWT (`/api/mobile/kategori-modul`) tanpa header `Authorization` (`401`) | Middleware `verifyMobileToken` tanpa header Bearer -> HTTP `401` | **PASS** |
+| **IT-06** | Mengizinkan akses endpoint terproteksi JWT dengan Bearer token valid dan membaca data dari database (`200`) | Verifikasi signature JWT -> query PostgreSQL `kategori_modul` | **PASS** |
 
 ---
 
-### Suite 2: Integrasi Laporan Harian (CRUD, Validasi, Draft Persistence & Review DPL)
+### Suite 2: Integrasi Laporan Harian, Persistensi Database & Alur Review Pembimbing (9 Kasus Uji)
 | ID | Nama Test Case | Integrasi yang Diverifikasi | Status |
 |----|----------------|-----------------------------|--------|
-| **IT-08** | Menolak pembuatan laporan harian jika pengguna belum terautentikasi (`401`) | Proteksi `auth()` pada `POST /api/laporan-harian` | **PASS** |
-| **IT-09** | Menolak laporan harian dengan deskripsi kurang dari 20 karakter (`400`) dan memastikan tidak tersimpan ke DB | Validasi Zod `laporanHarianSchema` -> *zero persistence* di tabel `laporan_harian` | **PASS** |
-| **IT-10** | Menyimpan laporan harian dengan `asDraft: true` sebagai status `DRAFT` di database *(Regression Test)* | Payload `asDraft: true` -> `POST /api/laporan-harian` -> kolom `status = 'DRAFT'` di DB | **PASS** |
-| **IT-11** | Menyimpan laporan harian dengan `asDraft: false` sebagai status `TERKIRIM` dan dapat dibaca kembali via `GET /api/laporan-harian` | Persistensi `TERKIRIM` + pembaruan progres magang + filter pencarian `GET /api/laporan-harian` | **PASS** |
-| **IT-12** | Mengizinkan DPL menyetujui (`DISETUJUI`) laporan mahasiswa dan otomatis mencatat notifikasi di database | Otorisasi `DPL` pada `PATCH /api/laporan-harian/[id]` -> update status + insert `notifikasi` | **PASS** |
-| **IT-13** | Menolak akses `PATCH /api/laporan-harian/[id]` jika diakses oleh role `MAHASISWA` (`401`) | Penegakan RBAC: mahasiswa tidak dapat menyetujui laporannya sendiri | **PASS** |
+| **IT-07** | Menolak request `GET /api/laporan-harian` ketika pengguna belum login (`401`) | Proteksi sesi `auth()` pada *Route Handler* | **PASS** |
+| **IT-08** | Menolak `POST /api/laporan-harian` ketika field wajib tidak lengkap (`400`) | Validasi Zod `laporanHarianSchema` -> *zero persistence* di DB | **PASS** |
+| **IT-09** | Menyimpan laporan harian sebagai `DRAFT` ketika `asDraft=true` *(Regression Test Bug Fix)* | Payload `asDraft: true` -> `POST /api/laporan-harian` -> kolom `status = 'DRAFT'` di DB (`201`) | **PASS** |
+| **IT-10** | Menyimpan laporan harian dengan status `TERKIRIM` ketika `asDraft=false` | Persistensi `TERKIRIM` + pencatatan `audit_log` & `notifikasi` di DB (`201`) | **PASS** |
+| **IT-11** | Mengembalikan daftar laporan harian sesuai kontrak frontend pada `GET /api/laporan-harian` | Query daftar laporan mahasiswa dari PostgreSQL (`200`) | **PASS** |
+| **IT-12** | Menolak review laporan (`PATCH /api/laporan-harian/[id]`) apabila dilakukan oleh role `MAHASISWA` (`401`) | Penegakan RBAC: mahasiswa tidak dapat me-review laporannya sendiri | **PASS** |
+| **IT-13** | Mengizinkan DPL pembimbing menyetujui laporan mahasiswa bimbingannya dan menyimpan catatan review (`200`) | Otorisasi `DPL` pada `PATCH /api/laporan-harian/[id]` -> status `DISETUJUI` di DB | **PASS** |
+| **IT-14** | Menolak penghapusan (`DELETE`) laporan yang sudah `DISETUJUI` oleh mahasiswa (`400`) | Proteksi integritas data laporan yang telah disetujui pembimbing | **PASS** |
+| **IT-15** | Mengizinkan mahasiswa mengubah laporan berstatus `DRAFT` menjadi `TERKIRIM` melalui `PUT` (`200`) | Transisi state `DRAFT` -> `TERKIRIM` pada `PUT /api/laporan-harian/[id]` | **PASS** |
 
 ---
 
-### Suite 3: Integrasi Absensi Geofencing BMKG & Persistensi Database
+### Suite 3: Integrasi Presensi Geofence & Riwayat Absensi (2 Kasus Uji)
 | ID | Nama Test Case | Integrasi yang Diverifikasi | Status |
 |----|----------------|-----------------------------|--------|
-| **IT-14** | Menolak absensi `HADIR` apabila koordinat berada di luar radius kantor BMKG (> 250m) | Query pengaturan koordinat kantor -> `calculateDistance` Haversine (~5.3 km) -> HTTP `400` | **PASS** |
-| **IT-15** | Menyimpan absensi `IZIN` ke database dan mengembalikan data tersebut melalui `GET /api/absensi` | `POST /api/absensi` -> insert `absensi` + `audit_logs` -> `GET /api/absensi` | **PASS** |
-| **IT-16** | Menolak absensi ganda pada hari yang sama (`400` Sudah melakukan absen masuk) | Pengecekan constraint `mahasiswaId_tanggal` sebelum insert duplikat | **PASS** |
+| **IT-16** | Menolak presensi `HADIR` apabila koordinat GPS berada di luar radius kantor tempat magang (`400`) | Query koordinat `tempat_magang` -> kalkulasi jarak Haversine -> HTTP `400` | **PASS** |
+| **IT-17** | Menyimpan pengajuan `IZIN` ke database dan dapat dibaca kembali pada `/api/riwayat/absensi` (`200`) | `POST /api/absensi` -> persistensi `absensi` -> `GET /api/riwayat/absensi` | **PASS** |
 
 ---
 
-### Suite 4: Integrasi Kalender Kegiatan & RBAC Pengaturan Sistem
+### Suite 4: Integrasi Kalender Kegiatan & Pengaturan Sistem RBAC (2 Kasus Uji)
 | ID | Nama Test Case | Integrasi yang Diverifikasi | Status |
 |----|----------------|-----------------------------|--------|
-| **IT-17** | Mahasiswa dapat menambahkan jadwal kegiatan pribadi dan membacanya kembali dari `GET /api/kalender` | `POST /api/kalender` (`isGlobal: false`) -> `GET /api/kalender` | **PASS** |
-| **IT-18** | Menolak perubahan pengaturan sistem oleh `MAHASISWA` (`403`) dan mengizinkan perubahan oleh `SUPERADMIN` (`200`) | RBAC `PUT /api/pengaturan` (`403 Forbidden` vs `200 OK`) -> verifikasi `GET /api/pengaturan` | **PASS** |
+| **IT-18** | Membuat agenda kalender oleh `SUPERADMIN` sebagai `INSTANSI` `PUBLIC` dan dapat dibaca oleh `MAHASISWA` | `POST /api/kalender` (`201`) -> `GET /api/kalender` (`200`) lintas role | **PASS** |
+| **IT-19** | Menolak perubahan pengaturan instansi oleh selain `SUPERADMIN` (`401`) dan mengizinkan `SUPERADMIN` mengubah pengaturan (`200`) | RBAC `PATCH /api/pengaturan` (`401` vs `200`) -> verifikasi `GET /api/pengaturan` | **PASS** |
+
+---
+
+### Suite 5: Hardening & Keamanan Isolasi Database Pengujian — Regression Tests (4 Kasus Uji)
+| ID | Nama Test Case | Integrasi yang Diverifikasi | Status |
+|----|----------------|-----------------------------|--------|
+| **IT-20** | Menolak koneksi database utama/production (`simag_bmkg` & `postgres`) pada `assertSafeTestDatabaseUrl` | Guard keamanan database pengujian wajib berakhiran `_test` (`SECURITY VIOLATION`) | **PASS** |
+| **IT-21** | Menolak eksekusi `ensureBddTestUser`, `cleanupBddTestUser`, dan `truncateTestDatabase` pada database non-test | Pencegahan mutasi/penghapusan tidak sengaja terhadap database utama | **PASS** |
+| **IT-22** | `cleanupBddTestUser` hanya menghapus data milik fixture mahasiswa dan menjaga data pengguna lain tetap utuh | *Scoped transactional cleanup* berdasarkan ID/email fixture tanpa merusak record user lain | **PASS** |
+| **IT-23** | Menonaktifkan override `SIMAG_TEST_SESSION` apabila `SIMAG_ALLOW_TEST_AUTH` tidak bernilai `true` | Proteksi *defense-in-depth* pada `src/lib/auth.ts` agar hook sesi uji tidak aktif di mode produksi | **PASS** |
 
 ---
 
@@ -91,7 +102,7 @@ npm run test:integration
 
 ## 5. Hasil Eksekusi Aktual & Keterbatasan
 
-- **Hasil Aktual:** **4 Test Suites / 18 Test Cases — 100% PASS (0 FAIL)** dalam waktu `~1.66 detik`.
+- **Hasil Aktual:** **5 Test Suites / 23 Test Cases — 100% PASS (0 FAIL)** dalam waktu `~21.45 detik` pada database terisolasi `simag_bmkg_test`.
 - **Keterbatasan (Limitations):**
-  1. Pada lingkungan pengujian integrasi berbasis Node.js, *Route Handlers* dipanggil secara langsung dengan objek `NextRequest` standar dan sesi pengguna disimulasikan melalui variabel `SIMAG_TEST_SESSION` pada helper `src/lib/auth.ts`. Pengujian aliran *cookie* terenkripsi dari form login ke *Route Handlers* melalui jaringan HTTP diuji secara penuh pada **BDD Automation Testing**.
-  2. Waktu sistem saat pengujian (`new Date()`) mengikuti zona waktu server (`Asia/Jakarta`), sehingga pengujian absensi pada *integration test* memfokuskan pada validasi *Geofencing* Haversine, duplikasi harian, dan persistensi izin, sedangkan logika batas waktu `> 07:00 WIB` (`TELAT` & `keterangan: "Terlambat"`) diuji secara deterministik pada *Unit Testing* (`tests/unit/core.test.ts`).
+  1. Pada lingkungan pengujian integrasi berbasis Node.js, *Route Handlers* dipanggil secara langsung dengan objek `Request` standar dan sesi pengguna disimulasikan secara terkontrol melalui `SIMAG_TEST_SESSION` (yang dikunci dengan `NODE_ENV !== "production"` dan `SIMAG_ALLOW_TEST_AUTH === "true"` pada `src/lib/auth.ts`). Pengujian aliran *cookie* HTTP secara menyeluruh diuji melalui **BDD Automation Testing** dan **E2E Usability Testing** di atas server terisolasi (`http://localhost:3201`).
+  2. Seluruh operasi database pengujian dilindungi oleh `assertSafeTestDatabaseUrl()` yang secara otomatis menolak eksekusi apabila nama database tidak berakhiran `_test`.

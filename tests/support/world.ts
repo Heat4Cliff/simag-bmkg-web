@@ -20,6 +20,8 @@ export function resolveChromiumExecutablePath(): string | undefined {
   return undefined;
 }
 
+import { getTestBaseUrl } from "./setup-test-db";
+
 export class SimagWorld extends World {
   browser?: Browser;
   context?: BrowserContext;
@@ -28,10 +30,7 @@ export class SimagWorld extends World {
 
   constructor(options: IWorldOptions) {
     super(options);
-    this.baseUrl =
-      process.env.TEST_BASE_URL ||
-      process.env.NEXTAUTH_URL ||
-      "http://localhost:3200";
+    this.baseUrl = getTestBaseUrl();
   }
 
   async initBrowser(sharedBrowser: Browser) {
@@ -76,10 +75,6 @@ export async function launchTestBrowser(): Promise<Browser> {
   return chromium.launch({
     headless: process.env.HEADLESS !== "false",
     ...(executablePath ? { executablePath } : {}),
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--host-resolver-rules=MAP simag.alwanabbas.my.id 104.21.90.124",
-    ],
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 }

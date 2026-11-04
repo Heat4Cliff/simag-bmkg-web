@@ -62,9 +62,8 @@ Then("daftar laporan menampilkan judul {string} dengan status {string}", async f
   const cardContainer = this.page.locator("a", { hasText: judul }).first();
   const cardText = await cardContainer.innerText();
   assert.ok(
-    cardText.toLowerCase().includes(expectedStatus.toLowerCase()) ||
-      cardText.toLowerCase().includes("terkirim"),
-    `Expected card to show status ${expectedStatus}, got: ${cardText}`
+    cardText.toLowerCase().includes(expectedStatus.toLowerCase()),
+    `Expected card to show status "${expectedStatus}", got: "${cardText}"`
   );
 });
 

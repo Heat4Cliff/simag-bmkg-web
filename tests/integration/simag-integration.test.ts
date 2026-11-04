@@ -2,8 +2,12 @@ import assert from "node:assert/strict";
 import { describe, it, before, after } from "node:test";
 import bcrypt from "bcryptjs";
 import {
+  assertSafeTestDatabaseUrl,
   ensureTestDatabaseExists,
   truncateTestDatabase,
+  ensureBddTestUser,
+  cleanupBddTestUser,
+  getTestDatabaseUrl,
 } from "../support/setup-test-db";
 import {
   TEST_USERS,
@@ -12,13 +16,9 @@ import {
 } from "../fixtures/test-data";
 
 // Ensure isolated test database URL is configured before loading Prisma / Route Handlers
-const testDbUrl = process.env.TEST_DATABASE_URL || (() => {
-  const base = process.env.DATABASE_URL || "postgresql://postgres:password_kamu@127.0.0.1:5432/simag_bmkg";
-  const u = new URL(base);
-  u.pathname = "/simag_bmkg_test";
-  return u.toString();
-})();
+const testDbUrl = getTestDatabaseUrl();
 process.env.DATABASE_URL = testDbUrl;
+process.env.SIMAG_ALLOW_TEST_AUTH = "true";
 
 function setMockSession(user: {
   id: string;
@@ -26,6 +26,7 @@ function setMockSession(user: {
   email: string;
   role: string;
 } | null) {
+  process.env.SIMAG_ALLOW_TEST_AUTH = "true";
   if (!user) {
     process.env.SIMAG_TEST_SESSION = "";
   } else {
@@ -654,6 +655,76 @@ describe("SIMAG BMKG — Integration Testing (API, Auth, Validation & PostgreSQL
       const getBody = await getRes.json();
       assert.equal(getBody.setting.namaInstansi, "UNUGHA Cilacap - Mitra BMKG");
       assert.equal(getBody.setting.radiusAbsensiMeter, 250);
+    });
+  });
+
+  describe("Suite 5: Hardening & Keamanan Isolasi Database Pengujian (Regression Tests)", () => {
+    it("menolak koneksi database utama/production (simag_bmkg & postgres) pada assertSafeTestDatabaseUrl", () => {
+      assert.throws(
+        () => assertSafeTestDatabaseUrl("postgresql://postgres:secret@127.0.0.1:5432/simag_bmkg"),
+        /SECURITY VIOLATION/
+      );
+      assert.throws(
+        () => assertSafeTestDatabaseUrl("postgresql://postgres:secret@127.0.0.1:5432/postgres"),
+        /SECURITY VIOLATION/
+      );
+      assert.throws(
+        () => assertSafeTestDatabaseUrl("postgresql://postgres:secret@127.0.0.1:5432/simag_production"),
+        /SECURITY VIOLATION/
+      );
+      const validUrl = assertSafeTestDatabaseUrl(
+        "postgresql://postgres:secret@127.0.0.1:5432/simag_bmkg_test"
+      );
+      assert.ok(validUrl.endsWith("/simag_bmkg_test"));
+    });
+
+    it("menolak eksekusi ensureBddTestUser, cleanupBddTestUser, dan truncateTestDatabase pada database non-test", async () => {
+      const prodUrl = "postgresql://postgres:secret@127.0.0.1:5432/simag_bmkg";
+      await assert.rejects(() => ensureBddTestUser(prodUrl), /SECURITY VIOLATION/);
+      await assert.rejects(() => cleanupBddTestUser(prodUrl), /SECURITY VIOLATION/);
+      await assert.rejects(() => truncateTestDatabase(prodUrl), /SECURITY VIOLATION/);
+    });
+
+    it("cleanupBddTestUser hanya menghapus data milik fixture mahasiswa dan menjaga data pengguna lain tetap utuh", async () => {
+      await ensureBddTestUser(testDbUrl);
+      await cleanupBddTestUser(testDbUrl);
+
+      // Pastikan pengguna fixture mahasiswa sudah terhapus
+      const deletedFixture = await prisma.user.findUnique({
+        where: { email: TEST_USERS.mahasiswa.email },
+      });
+      assert.equal(deletedFixture, null);
+
+      // Pastikan pengguna lain (DPL, Mentor, Superadmin) tidak ikut terhapus
+      const dplStillExists = await prisma.user.findUnique({
+        where: { id: seededIds.dplUserId },
+      });
+      const adminStillExists = await prisma.user.findUnique({
+        where: { id: seededIds.adminUserId },
+      });
+      assert.notEqual(dplStillExists, null);
+      assert.notEqual(adminStillExists, null);
+    });
+
+    it("menonaktifkan override SIMAG_TEST_SESSION apabila SIMAG_ALLOW_TEST_AUTH tidak bernilai true", async () => {
+      setMockSession({
+        id: seededIds.adminUserId,
+        name: TEST_USERS.superadmin.nama,
+        email: TEST_USERS.superadmin.email,
+        role: "SUPERADMIN",
+      });
+      process.env.SIMAG_ALLOW_TEST_AUTH = "false";
+
+      try {
+        // Ketika SIMAG_ALLOW_TEST_AUTH !== "true", auth() wajib mengabaikan SIMAG_TEST_SESSION
+        // dan mendelegasikan ke NextAuth asli (yang membutuhkan Next.js request store headers())
+        await assert.rejects(
+          () => laporanGet(new Request("http://localhost:3200/api/laporan-harian")),
+          /headers.*outside a request scope/i
+        );
+      } finally {
+        process.env.SIMAG_ALLOW_TEST_AUTH = "true";
+      }
     });
   });
 });

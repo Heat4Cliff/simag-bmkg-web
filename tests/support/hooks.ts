@@ -10,14 +10,20 @@ import { Browser } from "playwright";
 import fs from "fs/promises";
 import path from "path";
 import { SimagWorld, launchTestBrowser } from "./world";
-import { ensureBddTestUser, cleanupBddTestUser } from "./setup-test-db";
+import {
+  ensureBddTestUser,
+  cleanupBddTestUser,
+  startIsolatedTestServer,
+  stopIsolatedTestServer,
+} from "./setup-test-db";
 
 setDefaultTimeout(30_000);
 
 let sharedBrowser: Browser;
 
-BeforeAll(async function () {
+BeforeAll({ timeout: 60_000 }, async function () {
   await ensureBddTestUser();
+  await startIsolatedTestServer();
   await fs.mkdir(path.join(process.cwd(), "tests", "reports", "screenshots"), {
     recursive: true,
   });
@@ -48,9 +54,10 @@ After(async function (this: SimagWorld, scenario) {
   await this.closeContext();
 });
 
-AfterAll(async function () {
+AfterAll({ timeout: 30_000 }, async function () {
   if (sharedBrowser) {
     await sharedBrowser.close();
   }
+  await stopIsolatedTestServer();
   await cleanupBddTestUser();
 });

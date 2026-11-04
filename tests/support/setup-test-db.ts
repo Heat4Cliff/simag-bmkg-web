@@ -1,5 +1,7 @@
 import { Pool } from "pg";
 import bcrypt from "bcryptjs";
+import { spawn, ChildProcess } from "node:child_process";
+import path from "node:path";
 import { TEST_USERS, TEST_TEMPAT_MAGANG } from "../fixtures/test-data";
 
 export function getBaseDatabaseUrl(): string {
@@ -9,13 +11,40 @@ export function getBaseDatabaseUrl(): string {
   );
 }
 
+export function assertSafeTestDatabaseUrl(connectionString: string): string {
+  let parsed: URL;
+  try {
+    parsed = new URL(connectionString);
+  } catch {
+    throw new Error(
+      `SECURITY VIOLATION: Invalid database connection URL provided to test runner.`
+    );
+  }
+  const dbName = parsed.pathname.replace(/^\//, "");
+  if (
+    !dbName ||
+    dbName === "simag_bmkg" ||
+    dbName === "postgres" ||
+    !dbName.endsWith("_test")
+  ) {
+    throw new Error(
+      `SECURITY VIOLATION: Refusing to execute test operation on non-test database "${dbName}". Target database name must end with "_test".`
+    );
+  }
+  return connectionString;
+}
+
 export function getTestDatabaseUrl(): string {
   if (process.env.TEST_DATABASE_URL) {
-    return process.env.TEST_DATABASE_URL;
+    return assertSafeTestDatabaseUrl(process.env.TEST_DATABASE_URL);
   }
   const url = new URL(getBaseDatabaseUrl());
   url.pathname = "/simag_bmkg_test";
-  return url.toString();
+  return assertSafeTestDatabaseUrl(url.toString());
+}
+
+export function getTestBaseUrl(): string {
+  return process.env.TEST_BASE_URL || "http://localhost:3201";
 }
 
 const SCHEMA_SQL = `
@@ -207,9 +236,9 @@ CREATE TABLE IF NOT EXISTS "kampus_setting" (
 `;
 
 export async function ensureTestDatabaseExists(): Promise<string> {
-  const testDbUrl = getTestDatabaseUrl();
+  const testDbUrl = assertSafeTestDatabaseUrl(getTestDatabaseUrl());
   const parsed = new URL(testDbUrl);
-  const dbName = parsed.pathname.replace(/^\//, "") || "simag_bmkg_test";
+  const dbName = parsed.pathname.replace(/^\//, "");
 
   // Connect to default postgres database to create simag_bmkg_test if missing
   const adminUrl = new URL(testDbUrl);
@@ -240,7 +269,8 @@ export async function ensureTestDatabaseExists(): Promise<string> {
 }
 
 export async function truncateTestDatabase(testDbUrl = getTestDatabaseUrl()): Promise<void> {
-  const pool = new Pool({ connectionString: testDbUrl });
+  const safeUrl = assertSafeTestDatabaseUrl(testDbUrl);
+  const pool = new Pool({ connectionString: safeUrl });
   try {
     await pool.query(`
       TRUNCATE TABLE
@@ -266,8 +296,12 @@ export async function truncateTestDatabase(testDbUrl = getTestDatabaseUrl()): Pr
   }
 }
 
-export async function ensureBddTestUser(connectionString = getBaseDatabaseUrl()) {
-  const pool = new Pool({ connectionString });
+export async function ensureBddTestUser(connectionString = getTestDatabaseUrl()) {
+  const safeUrl = assertSafeTestDatabaseUrl(connectionString);
+  if (safeUrl === getTestDatabaseUrl()) {
+    await ensureTestDatabaseExists();
+  }
+  const pool = new Pool({ connectionString: safeUrl });
   try {
     const passwordHash = await bcrypt.hash(TEST_USERS.mahasiswa.password, 10);
     const userId = "bdd-test-user-mahasiswa-001";
@@ -349,16 +383,116 @@ export async function ensureBddTestUser(connectionString = getBaseDatabaseUrl())
   }
 }
 
-export async function cleanupBddTestUser(connectionString = getBaseDatabaseUrl()) {
-  const pool = new Pool({ connectionString });
+export async function cleanupBddTestUser(connectionString = getTestDatabaseUrl()) {
+  const safeUrl = assertSafeTestDatabaseUrl(connectionString);
+  const pool = new Pool({ connectionString: safeUrl });
+  const client = await pool.connect();
   try {
-    await pool.query(`DELETE FROM "users" WHERE "email" = $1`, [
-      TEST_USERS.mahasiswa.email,
-    ]);
-    await pool.query(`DELETE FROM "tempat_magang" WHERE "id" = $1`, [
-      TEST_TEMPAT_MAGANG.id,
-    ]);
+    await client.query("BEGIN");
+    const userRes = await client.query<{ id: string }>(
+      `SELECT "id" FROM "users" WHERE "email" = $1 OR "id" = 'bdd-test-user-mahasiswa-001'`,
+      [TEST_USERS.mahasiswa.email]
+    );
+    for (const row of userRes.rows) {
+      await client.query(`DELETE FROM "laporan_harian" WHERE "user_id" = $1`, [row.id]);
+      await client.query(`DELETE FROM "absensi" WHERE "user_id" = $1`, [row.id]);
+      await client.query(`DELETE FROM "notifikasi" WHERE "user_id" = $1`, [row.id]);
+      await client.query(`DELETE FROM "audit_log" WHERE "user_id" = $1`, [row.id]);
+      await client.query(`DELETE FROM "sessions" WHERE "user_id" = $1`, [row.id]);
+      await client.query(`DELETE FROM "mahasiswa_profiles" WHERE "user_id" = $1`, [row.id]);
+      await client.query(`DELETE FROM "users" WHERE "id" = $1`, [row.id]);
+    }
+    await client.query(
+      `DELETE FROM "tempat_magang"
+       WHERE "id" = $1
+         AND NOT EXISTS (
+           SELECT 1 FROM "mahasiswa_profiles" WHERE "tempat_magang_id" = $1
+         )`,
+      [TEST_TEMPAT_MAGANG.id]
+    );
+    await client.query("COMMIT");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
   } finally {
+    client.release();
     await pool.end();
+  }
+}
+
+let isolatedServerProcess: ChildProcess | null = null;
+
+export async function startIsolatedTestServer(): Promise<string> {
+  const baseUrl = getTestBaseUrl();
+  const parsedUrl = new URL(baseUrl);
+  const port = parsedUrl.port || "3201";
+  const host = parsedUrl.hostname || "127.0.0.1";
+
+  // Check if an isolated server is already listening on baseUrl
+  try {
+    const probe = await fetch(`${baseUrl}/login`, { redirect: "manual" });
+    if (probe.status >= 200 && probe.status < 400) {
+      return baseUrl;
+    }
+  } catch {
+    // Not running yet, proceed to spawn isolated test server
+  }
+
+  const testDbUrl = await ensureTestDatabaseExists();
+  const nextBin = path.join(process.cwd(), "node_modules", "next", "dist", "bin", "next");
+
+  isolatedServerProcess = spawn(
+    process.execPath,
+    [nextBin, "start", "-p", port, "-H", host],
+    {
+      cwd: process.cwd(),
+      env: {
+        ...process.env,
+        NODE_ENV: "production",
+        DATABASE_URL: testDbUrl,
+        NEXTAUTH_URL: baseUrl,
+        AUTH_URL: baseUrl,
+        AUTH_TRUST_HOST: "true",
+        SIMAG_ALLOW_TEST_AUTH: "false",
+      },
+      stdio: "ignore",
+    }
+  );
+
+  const deadline = Date.now() + 25_000;
+  while (Date.now() < deadline) {
+    try {
+      const res = await fetch(`${baseUrl}/login`, { redirect: "manual" });
+      if (res.status >= 200 && res.status < 400) {
+        return baseUrl;
+      }
+    } catch {
+      // Wait for server to bind
+    }
+    await new Promise((r) => setTimeout(r, 300));
+  }
+
+  await stopIsolatedTestServer();
+  throw new Error(`Failed to start isolated Next.js test server at ${baseUrl} within 25s`);
+}
+
+export async function stopIsolatedTestServer(): Promise<void> {
+  if (!isolatedServerProcess) return;
+  const proc = isolatedServerProcess;
+  isolatedServerProcess = null;
+  if (proc.exitCode === null && !proc.killed) {
+    proc.kill("SIGTERM");
+    await new Promise<void>((resolve) => {
+      const timer = setTimeout(() => {
+        try {
+          proc.kill("SIGKILL");
+        } catch {}
+        resolve();
+      }, 3_000);
+      proc.once("exit", () => {
+        clearTimeout(timer);
+        resolve();
+      });
+    });
   }
 }
