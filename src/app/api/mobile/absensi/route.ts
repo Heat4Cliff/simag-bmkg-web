@@ -108,8 +108,15 @@ export async function POST(request: Request) {
       if (absensiHariIni) {
         return buildCorsResponse({ success: false, message: "Anda sudah absen masuk hari ini" }, 400);
       }
-      const jamMulaiKerja = new Date(hariIni.getFullYear(), hariIni.getMonth(), hariIni.getDate(), 7, 30, 0);
-      const isLate = hariIni > jamMulaiKerja;
+      const formatterWib = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Jakarta",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      });
+      const [wibHour, wibMinute, wibSecond] = formatterWib.format(new Date()).split(":").map(Number);
+      const isLate = wibHour > 7 || (wibHour === 7 && (wibMinute > 0 || wibSecond > 0));
 
       const newAbsen = await prisma.absensi.create({
         data: {

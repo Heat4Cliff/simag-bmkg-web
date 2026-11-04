@@ -10,14 +10,14 @@ export default function BuatLaporanPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
-    tanggal: "",
+    tanggal: new Date().toISOString().split("T")[0],
     judul: "",
     deskripsi: "",
     kendala: "",
   });
 
   useEffect(() => {
-    setForm((f) => ({ ...f, tanggal: new Date().toISOString().split("T")[0] }));
+    setForm((f) => ({ ...f, tanggal: f.tanggal || new Date().toISOString().split("T")[0] }));
   }, []);
 
   const handleSubmit = async (e: React.FormEvent, asDraft = false) => {
@@ -65,34 +65,37 @@ export default function BuatLaporanPage() {
 
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-5">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">Tanggal *</label>
+          <label htmlFor="laporan-tanggal" className="block text-sm font-semibold text-gray-700 mb-1.5">Tanggal *</label>
           <input
+            id="laporan-tanggal"
             type="date"
             value={form.tanggal}
-            onChange={(e) => setForm({ ...form, tanggal: e.target.value })}
+            onChange={(e) => setForm((f) => ({ ...f, tanggal: e.target.value }))}
             className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1E8A3C]/30 focus:border-[#1E8A3C]"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">Judul Laporan *</label>
+          <label htmlFor="laporan-judul" className="block text-sm font-semibold text-gray-700 mb-1.5">Judul Laporan *</label>
           <input
+            id="laporan-judul"
             type="text"
             value={form.judul}
-            onChange={(e) => setForm({ ...form, judul: e.target.value })}
+            onChange={(e) => setForm((f) => ({ ...f, judul: e.target.value }))}
             placeholder="Contoh: Observasi Data Curah Hujan Stasiun A"
             className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1E8A3C]/30 focus:border-[#1E8A3C]"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+          <label htmlFor="laporan-deskripsi" className="block text-sm font-semibold text-gray-700 mb-1.5">
             Deskripsi Kegiatan *
             <span className="text-xs text-gray-400 font-normal ml-2">(Jelaskan kegiatan yang dilakukan hari ini)</span>
           </label>
           <textarea
+            id="laporan-deskripsi"
             value={form.deskripsi}
-            onChange={(e) => setForm({ ...form, deskripsi: e.target.value })}
+            onChange={(e) => setForm((f) => ({ ...f, deskripsi: e.target.value }))}
             rows={6}
             placeholder="Tuliskan kegiatan harian Anda secara detail..."
             className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1E8A3C]/30 focus:border-[#1E8A3C] resize-none"
@@ -101,13 +104,14 @@ export default function BuatLaporanPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+          <label htmlFor="laporan-kendala" className="block text-sm font-semibold text-gray-700 mb-1.5">
             Kendala
             <span className="text-xs text-gray-400 font-normal ml-2">(opsional)</span>
           </label>
           <textarea
+            id="laporan-kendala"
             value={form.kendala}
-            onChange={(e) => setForm({ ...form, kendala: e.target.value })}
+            onChange={(e) => setForm((f) => ({ ...f, kendala: e.target.value }))}
             rows={3}
             placeholder="Tuliskan kendala yang dihadapi (jika ada)..."
             className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1E8A3C]/30 focus:border-[#1E8A3C] resize-none"

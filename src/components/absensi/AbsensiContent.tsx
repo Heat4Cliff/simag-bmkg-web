@@ -311,15 +311,22 @@ export default function AbsensiContent() {
            </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className={`p-3 rounded-xl border-2 ${sudahMasuk ? "border-green-200 bg-green-50" : "border-gray-100 bg-gray-50"}`}>
-              <p className="text-xs text-gray-500 mb-1">Jam Masuk</p>
+            <div className={`p-3 rounded-xl border-2 ${sudahMasuk ? (absensiHariIni?.status === "TELAT" ? "border-amber-200 bg-amber-50/70" : "border-green-200 bg-green-50") : "border-gray-100 bg-gray-50"}`}>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs text-gray-500">Jam Masuk</p>
+                {sudahMasuk && absensiHariIni?.status === "TELAT" && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
+                    Terlambat
+                  </span>
+                )}
+              </div>
               {sudahMasuk ? (
                 <>
-                  <p className="text-lg font-bold text-green-700">
+                  <p className={`text-lg font-bold ${absensiHariIni?.status === "TELAT" ? "text-amber-800" : "text-green-700"}`}>
                     {formatWaktu(new Date(absensiHariIni!.jamMasuk!))}
                   </p>
-                  <p className="text-xs text-green-600 flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" /> Tercatat
+                  <p className={`text-xs flex items-center gap-1 ${absensiHariIni?.status === "TELAT" ? "text-amber-700 font-medium" : "text-green-600"}`}>
+                    <CheckCircle2 className="w-3 h-3" /> {absensiHariIni?.status === "TELAT" ? "Tercatat (Terlambat)" : "Tercatat"}
                   </p>
                 </>
               ) : (

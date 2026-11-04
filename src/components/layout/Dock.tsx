@@ -58,7 +58,7 @@ function DockItem({ href, icon, label, mouseX, hideOnMobile }: DockItemProps) {
   const width = useSpring(widthSync, { mass: 0.1, stiffness: 150, damping: 12 });
 
   return (
-    <Link href={href} className={cn("relative group", hideOnMobile ? "hidden sm:block" : "block")}>
+    <Link href={href} aria-label={label} className={cn("relative group", hideOnMobile ? "hidden sm:block" : "block")}>
       <motion.div
         ref={ref}
         style={{ width: isMobile ? 44 : width, height: isMobile ? 44 : width }}

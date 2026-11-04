@@ -8,6 +8,10 @@
 		"start": "next start -p 3200 -H ::",
 		"lint": "eslint",
 		"test:unit": "tsx --test tests/unit/core.test.ts",
+		"test:integration": "node --env-file-if-exists=.env --import tsx --test tests/integration/simag-integration.test.ts",
+		"test:bdd": "node --env-file-if-exists=.env --import tsx ./node_modules/.bin/cucumber-js",
+		"test:e2e": "node --env-file-if-exists=.env --import tsx --test tests/e2e/usability-audit.test.ts",
+		"test:report": "node --env-file-if-exists=.env --import tsx tests/support/generate-report.ts",
 		"db:push": "prisma db push",
 		"db:seed": "prisma db seed",
 		"db:studio": "prisma studio",
@@ -56,6 +60,8 @@
 		"zustand": "^5.0.15"
 	},
 	"devDependencies": {
+		"@cucumber/cucumber": "^10.9.0",
+		"@playwright/test": "^1.52.0",
 		"@tailwindcss/postcss": "^4",
 		"@types/bcryptjs": "^2.4.6",
 		"@types/jsonwebtoken": "^9.0.10",
@@ -67,6 +73,7 @@
 		"eslint": "^9",
 		"eslint-config-next": "16.3.2",
 		"jsrepo": "^3.8.1",
+		"playwright": "^1.52.0",
 		"tailwindcss": "^4",
 		"ts-node": "^10.9.2",
 		"tsx": "^4.23.15",

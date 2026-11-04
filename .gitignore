@@ -61,8 +61,13 @@ refactor.js
 run-seed.js
 test-*.js
 test-*.ts
+!tests/**/*.ts
 update-status.js
 
-# markdown documents (keep only README.md)
+# markdown documents (keep README.md and docs/testing/*.md)
 *.md
 !README.md
+!AGENTS.md
+!docs/
+!docs/**
+!docs/**/*.md
