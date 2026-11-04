@@ -174,7 +174,7 @@ describe("SIMAG BMKG — Automated E2E Usability, Responsive Layout & Basic Acce
       .getByText(TEST_USERS.mahasiswa.nama)
       .waitFor({ state: "visible", timeout: 10_000 });
     await page
-      .getByText("Belum Absen")
+      .locator("p:visible", { hasText: "Selamat datang," })
       .first()
       .waitFor({ state: "visible", timeout: 10_000 });
     await page.waitForLoadState("networkidle", { timeout: 5_000 }).catch(() => {});

@@ -51,6 +51,15 @@ next-env.d.ts
 /stitch_interna_unugha_internship_app/
 public/uploads/
 
+# workflow mirrored in docs/testing/ due to oauth workflow scope restriction
+.github/workflows/testing.yml
+
+# academic task submission documents and snapshots (Pertemuan 9)
+Laporan_Tugas_Unit_Testing_Kelompok_3.*
+public/Laporan_Tugas_Unit_Testing_Kelompok_3.*
+public/halaman_laporan-*.png
+public/screenshot_unit_test.png
+
 # temporary test and migration scripts
 check-users.js
 clear-dummy.ts

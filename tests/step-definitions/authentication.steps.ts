@@ -39,7 +39,7 @@ Given("pengguna telah login", async function (this: SimagWorld) {
     .getByText(TEST_USERS.mahasiswa.nama)
     .waitFor({ state: "visible", timeout: 10_000 });
   await this.page
-    .getByText("Belum Absen")
+    .locator("p:visible", { hasText: "Selamat datang," })
     .first()
     .waitFor({ state: "visible", timeout: 10_000 });
 });
