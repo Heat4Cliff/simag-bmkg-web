@@ -14,7 +14,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 1247039579
+              "duration": 1537816103
             }
           },
           {
@@ -27,7 +27,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 2404562679
+              "duration": 1891256517
             }
           },
           {
@@ -36,11 +36,11 @@
             "line": 8,
             "name": "pengguna memasukkan kredensial yang valid",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:47"
+              "location": "tests/step-definitions/authentication.steps.ts:44"
             },
             "result": {
               "status": "passed",
-              "duration": 1270873757
+              "duration": 787011953
             }
           },
           {
@@ -49,11 +49,11 @@
             "line": 9,
             "name": "menekan tombol login",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:79"
+              "location": "tests/step-definitions/authentication.steps.ts:76"
             },
             "result": {
               "status": "passed",
-              "duration": 479993041
+              "duration": 236109508
             }
           },
           {
@@ -62,11 +62,11 @@
             "line": 10,
             "name": "pengguna berhasil masuk",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:83"
+              "location": "tests/step-definitions/authentication.steps.ts:80"
             },
             "result": {
               "status": "passed",
-              "duration": 4521189662
+              "duration": 3252545643
             }
           },
           {
@@ -75,11 +75,11 @@
             "line": 11,
             "name": "dashboard ditampilkan",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:92"
+              "location": "tests/step-definitions/authentication.steps.ts:89"
             },
             "result": {
               "status": "passed",
-              "duration": 656269830
+              "duration": 262590330
             }
           },
           {
@@ -87,7 +87,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 225050408
+              "duration": 124893563
             }
           }
         ],
@@ -106,7 +106,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 913019846
+              "duration": 413903252
             }
           },
           {
@@ -119,7 +119,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 2130641809
+              "duration": 1556227396
             }
           },
           {
@@ -128,11 +128,11 @@
             "line": 15,
             "name": "pengguna memasukkan kredensial yang tidak valid",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:62"
+              "location": "tests/step-definitions/authentication.steps.ts:59"
             },
             "result": {
               "status": "passed",
-              "duration": 668475619
+              "duration": 532517133
             }
           },
           {
@@ -141,11 +141,11 @@
             "line": 16,
             "name": "menekan tombol login",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:79"
+              "location": "tests/step-definitions/authentication.steps.ts:76"
             },
             "result": {
               "status": "passed",
-              "duration": 175600548
+              "duration": 206105845
             }
           },
           {
@@ -154,11 +154,11 @@
             "line": 17,
             "name": "sistem menolak login",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:98"
+              "location": "tests/step-definitions/authentication.steps.ts:95"
             },
             "result": {
               "status": "passed",
-              "duration": 901192831
+              "duration": 921988369
             }
           },
           {
@@ -167,11 +167,11 @@
             "line": 18,
             "name": "menampilkan pesan error yang sesuai",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:110"
+              "location": "tests/step-definitions/authentication.steps.ts:107"
             },
             "result": {
               "status": "passed",
-              "duration": 178345474
+              "duration": 221923378
             }
           },
           {
@@ -179,7 +179,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 68762810
+              "duration": 50183960
             }
           }
         ],
@@ -198,7 +198,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 473714333
+              "duration": 301886544
             }
           },
           {
@@ -211,7 +211,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 49575262
+              "duration": 49188371
             }
           },
           {
@@ -220,11 +220,11 @@
             "line": 22,
             "name": "pengguna mengakses halaman protected secara langsung",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:116"
+              "location": "tests/step-definitions/authentication.steps.ts:113"
             },
             "result": {
               "status": "passed",
-              "duration": 742505420
+              "duration": 835777430
             }
           },
           {
@@ -233,11 +233,11 @@
             "line": 23,
             "name": "sistem menolak akses atau mengarahkan pengguna ke halaman login",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:120"
+              "location": "tests/step-definitions/authentication.steps.ts:117"
             },
             "result": {
               "status": "passed",
-              "duration": 866159671
+              "duration": 565077390
             }
           },
           {
@@ -245,7 +245,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 102439281
+              "duration": 55114166
             }
           }
         ],
@@ -264,7 +264,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 457831002
+              "duration": 314028321
             }
           },
           {
@@ -277,7 +277,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 5626795304
+              "duration": 3284206535
             }
           },
           {
@@ -286,11 +286,11 @@
             "line": 27,
             "name": "pengguna melakukan logout",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:132"
+              "location": "tests/step-definitions/authentication.steps.ts:129"
             },
             "result": {
               "status": "passed",
-              "duration": 2456423800
+              "duration": 3823915262
             }
           },
           {
@@ -299,11 +299,11 @@
             "line": 28,
             "name": "session pengguna berakhir",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:149"
+              "location": "tests/step-definitions/authentication.steps.ts:143"
             },
             "result": {
               "status": "passed",
-              "duration": 719516406
+              "duration": 710031810
             }
           },
           {
@@ -312,11 +312,11 @@
             "line": 29,
             "name": "pengguna kembali ke halaman login",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:162"
+              "location": "tests/step-definitions/authentication.steps.ts:156"
             },
             "result": {
               "status": "passed",
-              "duration": 110751538
+              "duration": 115182668
             }
           },
           {
@@ -324,7 +324,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 43932190
+              "duration": 53681399
             }
           }
         ],
@@ -354,7 +354,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 358884104
+              "duration": 431423758
             }
           },
           {
@@ -367,7 +367,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 5138822057
+              "duration": 3442311013
             }
           },
           {
@@ -380,7 +380,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 50609468
+              "duration": 124557807
             }
           },
           {
@@ -393,7 +393,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 163998215
+              "duration": 259152385
             }
           },
           {
@@ -406,7 +406,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 148358024
+              "duration": 173236834
             }
           },
           {
@@ -419,7 +419,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 138555685
+              "duration": 177739740
             }
           },
           {
@@ -432,7 +432,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 199492060
+              "duration": 210664648
             }
           },
           {
@@ -440,7 +440,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 120887892
+              "duration": 94231969
             }
           }
         ],
@@ -459,7 +459,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 480353200
+              "duration": 474828264
             }
           },
           {
@@ -472,7 +472,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 4144367082
+              "duration": 4155115422
             }
           },
           {
@@ -485,7 +485,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 50993905
+              "duration": 144172785
             }
           },
           {
@@ -498,7 +498,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 220219707
+              "duration": 515107873
             }
           },
           {
@@ -511,7 +511,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 195294312
+              "duration": 296789052
             }
           },
           {
@@ -519,7 +519,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 97396740
+              "duration": 92159738
             }
           }
         ],
@@ -538,7 +538,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 418658762
+              "duration": 355165804
             }
           },
           {
@@ -551,7 +551,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 4239801909
+              "duration": 3166519121
             }
           },
           {
@@ -564,7 +564,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 344287343
+              "duration": 530591121
             }
           },
           {
@@ -577,7 +577,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 926428015
+              "duration": 1078304953
             }
           },
           {
@@ -590,7 +590,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 236562966
+              "duration": 178936848
             }
           },
           {
@@ -598,7 +598,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 78122445
+              "duration": 67665182
             }
           }
         ],
@@ -628,7 +628,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 462358072
+              "duration": 501077730
             }
           },
           {
@@ -641,7 +641,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 3770189611
+              "duration": 4440081028
             }
           },
           {
@@ -654,7 +654,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 1097968550
+              "duration": 1210930399
             }
           },
           {
@@ -667,7 +667,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 606298844
+              "duration": 706656864
             }
           },
           {
@@ -680,7 +680,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 400602571
+              "duration": 405097246
             }
           },
           {
@@ -693,7 +693,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 126811707
+              "duration": 251742767
             }
           },
           {
@@ -706,7 +706,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 185653872
+              "duration": 157769780
             }
           },
           {
@@ -719,7 +719,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 282724535
+              "duration": 393623581
             }
           },
           {
@@ -732,7 +732,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 451489667
+              "duration": 422842499
             }
           },
           {
@@ -740,7 +740,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 105969954
+              "duration": 119613971
             }
           }
         ],
@@ -759,7 +759,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 750561212
+              "duration": 717214998
             }
           },
           {
@@ -772,7 +772,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 3878454054
+              "duration": 3581738523
             }
           },
           {
@@ -785,7 +785,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 3908564163
+              "duration": 2759103723
             }
           },
           {
@@ -798,7 +798,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 548068264
+              "duration": 710263659
             }
           },
           {
@@ -811,7 +811,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 497679717
+              "duration": 397432369
             }
           },
           {
@@ -824,7 +824,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 271122331
+              "duration": 405447668
             }
           },
           {
@@ -832,7 +832,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 68285724
+              "duration": 38639302
             }
           }
         ],
@@ -851,7 +851,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 578315545
+              "duration": 401455623
             }
           },
           {
@@ -864,7 +864,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 7738570663
+              "duration": 3497874402
             }
           },
           {
@@ -877,7 +877,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 1050144870
+              "duration": 1845856813
             }
           },
           {
@@ -890,7 +890,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 402356754
+              "duration": 227787377
             }
           },
           {
@@ -903,7 +903,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 1250628588
+              "duration": 164588592
             }
           },
           {
@@ -911,7 +911,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 242638451
+              "duration": 81237538
             }
           }
         ],
@@ -930,7 +930,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 459490756
+              "duration": 386669689
             }
           },
           {
@@ -943,7 +943,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 4471708549
+              "duration": 3350973139
             }
           },
           {
@@ -956,7 +956,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 1259108747
+              "duration": 1217581808
             }
           },
           {
@@ -969,7 +969,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 278197727
+              "duration": 209640650
             }
           },
           {
@@ -982,7 +982,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 123725728
+              "duration": 123545125
             }
           },
           {
@@ -990,7 +990,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 89377071
+              "duration": 111428142
             }
           }
         ],

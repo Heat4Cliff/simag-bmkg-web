@@ -19,7 +19,14 @@ export async function GET(request: Request) {
     const todayStart = getJakartaDateISO(); // UTC midnight based on Jakarta date
     const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000 - 1); // 23:59:59.999
 
-    let stats = { kehadiran: 0, laporan: 0, modul: 0, statusHariIni: "Belum Absen", totalAbsensiDiisi: 0 };
+    let stats: {
+      kehadiran: number;
+      laporan: number;
+      modul: number;
+      statusHariIni: string;
+      totalAbsensiDiisi: number;
+      isPeriodeSelesai?: boolean;
+    } = { kehadiran: 0, laporan: 0, modul: 0, statusHariIni: "Belum Absen", totalAbsensiDiisi: 0, isPeriodeSelesai: false };
     let laporanTerbaru: any[] = [];
     let jadwalTerdekat: any[] = [];
     
@@ -33,6 +40,13 @@ export async function GET(request: Request) {
     let periodeMagang = null;
 
     if (role === "MAHASISWA") {
+      const mhsProfile = await prisma.mahasiswaProfile.findUnique({
+        where: { userId }, select: { periodeMulai: true, periodeSelesai: true }
+      });
+      const isPeriodeSelesai = Boolean(
+        mhsProfile?.periodeSelesai && today > new Date(mhsProfile.periodeSelesai)
+      );
+
       const kehadiran = await prisma.absensi.count({
         where: { userId, tanggal: { gte: monthStart, lte: monthEnd }, status: "HADIR" },
       });
@@ -41,9 +55,11 @@ export async function GET(request: Request) {
       const absenHariIni = await prisma.absensi.findFirst({
         where: { userId, tanggal: { gte: todayStart, lte: todayEnd } },
       });
-      const statusHariIni = absenHariIni ? absenHariIni.status : "Belum Absen";
+      const statusHariIni = absenHariIni
+        ? absenHariIni.status
+        : (isPeriodeSelesai ? "Selesai" : "Belum Absen");
       const totalAbsensiDiisi = await prisma.absensi.count({ where: { userId } });
-      stats = { kehadiran, laporan, modul, statusHariIni, totalAbsensiDiisi };
+      stats = { kehadiran, laporan, modul, statusHariIni, totalAbsensiDiisi, isPeriodeSelesai };
 
       const laporan5 = await prisma.laporanHarian.findMany({
         where: { userId }, orderBy: { createdAt: "desc" }, take: 5,
@@ -81,13 +97,11 @@ export async function GET(request: Request) {
         sakit: absensiBulanIni.filter(a => a.status === "SAKIT").length,
       };
 
-      const mhsProfile = await prisma.mahasiswaProfile.findUnique({
-        where: { userId }, select: { periodeMulai: true, periodeSelesai: true }
-      });
       if (mhsProfile && mhsProfile.periodeMulai && mhsProfile.periodeSelesai) {
         periodeMagang = {
           mulai: mhsProfile.periodeMulai.toISOString(),
-          selesai: mhsProfile.periodeSelesai.toISOString()
+          selesai: mhsProfile.periodeSelesai.toISOString(),
+          isPeriodeSelesai
         };
       }
       

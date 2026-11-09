@@ -34,10 +34,7 @@ Given("pengguna telah login", async function (this: SimagWorld) {
     undefined,
     { timeout: 15_000 }
   );
-  await this.page
-    .locator("header")
-    .getByText(TEST_USERS.mahasiswa.nama)
-    .waitFor({ state: "visible", timeout: 10_000 });
+  await this.page.locator("header button[aria-label='Menu Profil Pengguna']").waitFor({ state: "visible", timeout: 10_000 });
   await this.page
     .locator("p:visible", { hasText: "Selamat datang," })
     .first()
@@ -131,14 +128,11 @@ Then("sistem menolak akses atau mengarahkan pengguna ke halaman login", async fu
 
 When("pengguna melakukan logout", async function (this: SimagWorld) {
   // Pastikan seluruh request sesi awal pada Dashboard telah selesai sepenuhnya
-  await this.page
-    .locator("header")
-    .getByText(TEST_USERS.mahasiswa.nama)
-    .waitFor({ state: "visible", timeout: 10_000 });
+  const headerProfileBtn = this.page.locator("header button[aria-label='Menu Profil Pengguna']");
+  await headerProfileBtn.waitFor({ state: "visible", timeout: 10_000 });
   await this.page.waitForLoadState("networkidle", { timeout: 5_000 }).catch(() => {});
 
   // Klik menu profil di pojok kanan atas header
-  const headerProfileBtn = this.page.locator("header button").last();
   await headerProfileBtn.click();
 
   const keluarBtn = this.page.getByRole("button", { name: /Keluar/i });

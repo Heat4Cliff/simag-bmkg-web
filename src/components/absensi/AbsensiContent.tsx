@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   RefreshCw,
 } from "lucide-react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { KOORDINAT_KANTOR, RADIUS_ABSENSI_METER, hitungJarakMeter, formatTanggal, formatWaktu } from "@/lib/utils";
 import {
@@ -28,6 +29,7 @@ interface AbsensiHariIni {
   jamPulang?: string;
   status?: string;
   lokasiValid?: boolean;
+  keterangan?: string;
 }
 
 export default function AbsensiContent() {
@@ -59,6 +61,8 @@ export default function AbsensiContent() {
   const [lampiranExt, setLampiranExt] = useState<string | null>(null);
   const [isLibur, setIsLibur] = useState(false);
   const [keteranganLibur, setKeteranganLibur] = useState("");
+  const [isPeriodeSelesai, setIsPeriodeSelesai] = useState(false);
+  const [periodeSelesaiDate, setPeriodeSelesaiDate] = useState<string | null>(null);
 
   const now = new Date();
   const jamString = formatWaktu(now);
@@ -123,6 +127,10 @@ export default function AbsensiContent() {
     fetch("/api/absensi", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
+        if (data.isPeriodeSelesai) {
+          setIsPeriodeSelesai(true);
+          if (data.periodeSelesai) setPeriodeSelesaiDate(data.periodeSelesai);
+        }
         if (data.absensi) {
           setAbsensiHariIni(data.absensi);
           if (data.absensi.jamMasuk && !data.absensi.jamPulang && data.absensi.status !== "IZIN" && data.absensi.status !== "SAKIT") {
@@ -221,6 +229,10 @@ export default function AbsensiContent() {
   };
 
   const handleAbsen = async () => {
+    if (isPeriodeSelesai) {
+      toast.error("Periode magang Anda telah selesai. Anda tidak dapat melakukan absensi lagi.");
+      return;
+    }
     if (jenisAbsensi === "HADIR") {
       if (!foto) {
         toast.error("Harap ambil foto selfie terlebih dahulu.");
@@ -296,8 +308,46 @@ export default function AbsensiContent() {
       <h1 className="text-xl font-bold text-gray-800 mb-1">Absensi Harian</h1>
       <p suppressHydrationWarning className="text-sm text-gray-500 mb-5">{tanggalString} • {jamString}</p>
 
-      {/* Status Absensi Hari Ini */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4">
+      {/* Jika Periode Magang Telah Selesai */}
+      {isPeriodeSelesai ? (
+        <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-emerald-100 text-center space-y-4">
+          <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+            <CheckCircle2 className="w-8 h-8" />
+          </div>
+          <div>
+            <span className="inline-block px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-full mb-2">
+              Periode Magang Selesai
+            </span>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
+              Masa Magang Anda Telah Berakhir
+            </h2>
+            <p className="text-sm text-gray-500 max-w-md mx-auto mt-2 leading-relaxed">
+              Periode magang Anda di BMKG telah resmi selesai
+              {periodeSelesaiDate ? ` pada tanggal ${formatTanggal(new Date(periodeSelesaiDate))}` : ""}.
+              Sistem absensi harian kini telah ditutup untuk akun Anda. Terima kasih atas dedikasi dan kerja sama Anda selama masa magang.
+            </p>
+          </div>
+
+          <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center items-center max-w-md mx-auto">
+            <Link
+              href="/riwayat/absensi"
+              className="w-full sm:w-auto px-5 py-2.5 bg-[#1E8A3C] text-white font-semibold text-sm rounded-xl hover:bg-[#16682D] transition-colors shadow-sm flex items-center justify-center gap-2"
+            >
+              <Clock className="w-4 h-4" />
+              Lihat Riwayat Absensi
+            </Link>
+            <Link
+              href="/dashboard"
+              className="w-full sm:w-auto px-5 py-2.5 bg-gray-100 text-gray-700 font-semibold text-sm rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+            >
+              Kembali ke Dashboard
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Status Absensi Hari Ini */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4">
         <h3 className="text-sm font-bold text-gray-700 mb-3">Status Hari Ini</h3>
         
         {sudahIzinAtauSakit ? (
@@ -651,6 +701,8 @@ export default function AbsensiContent() {
             Selamat, Anda sudah absen masuk dan pulang hari ini.
           </p>
         </div>
+      )}
+        </>
       )}
     </div>
   );

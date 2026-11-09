@@ -31,6 +31,7 @@ export async function GET() {
       programStudi: user.mahasiswaProfile?.programStudi || "-",
       institusiAsal: "-",
       periodeMulai: user.mahasiswaProfile?.periodeMulai,
+      periodeSelesai: user.mahasiswaProfile?.periodeSelesai,
       fotoProfil: user.fotoProfil || null,
     });
   } catch (error) {

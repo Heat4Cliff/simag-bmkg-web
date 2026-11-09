@@ -22,6 +22,18 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { jenisAbsensi = "HADIR", tipe, latitude, longitude, foto, keterangan, lampiranBase64, lampiranExt } = body;
 
+    // Ambil profile mahasiswa untuk cek masa magang & tempat magang
+    const profile = await prisma.mahasiswaProfile.findUnique({
+      where: { userId },
+      include: { tempatMagang: true }
+    });
+
+    if (profile?.periodeSelesai && new Date() > new Date(profile.periodeSelesai)) {
+      return NextResponse.json({
+        error: "Periode magang Anda telah selesai. Anda sudah tidak dapat melakukan absensi lagi."
+      }, { status: 403 });
+    }
+
     const infoLibur = cekLibur(new Date(), { allowWeekend: true });
     if (infoLibur.isLibur) {
       return NextResponse.json({ error: `Hari ini libur: ${infoLibur.keterangan}. Anda tidak bisa absen.` }, { status: 403 });
@@ -48,12 +60,6 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-
-    // Ambil profile mahasiswa untuk cek tempat magang
-    const profile = await prisma.mahasiswaProfile.findUnique({
-      where: { userId },
-      include: { tempatMagang: true }
-    });
 
     let lokasiValid = true;
     let jarak = 0;
@@ -235,6 +241,10 @@ export async function GET() {
     include: { tempatMagang: true },
   });
 
+  const isPeriodeSelesai = Boolean(
+    profile?.periodeSelesai && today > new Date(profile.periodeSelesai)
+  );
+
   const kantor = {
     nama: profile?.tempatMagang?.namaInstansi || "Kantor BMKG",
     alamat: profile?.tempatMagang?.alamat || "Stasiun Meteorologi / Kantor BMKG",
@@ -248,5 +258,8 @@ export async function GET() {
     isLibur: infoLibur.isLibur,
     keteranganLibur: infoLibur.keterangan,
     kantor,
+    isPeriodeSelesai,
+    periodeMulai: profile?.periodeMulai?.toISOString() || null,
+    periodeSelesai: profile?.periodeSelesai?.toISOString() || null,
   });
 }

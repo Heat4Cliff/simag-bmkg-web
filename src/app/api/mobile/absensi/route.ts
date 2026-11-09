@@ -25,6 +25,17 @@ export async function POST(request: Request) {
     const user = await getMobileAuthUser(request);
     if (!user) return buildCorsResponse({ success: false, message: "Unauthorized" }, 401);
 
+    const profile = await prisma.mahasiswaProfile.findUnique({
+      where: { userId: user.id }
+    });
+
+    if (profile?.periodeSelesai && new Date() > new Date(profile.periodeSelesai)) {
+      return buildCorsResponse({
+        success: false,
+        message: "Periode magang Anda telah selesai. Anda sudah tidak dapat melakukan absensi lagi."
+      }, 403);
+    }
+
     const formData = await request.formData();
     const tipe = formData.get("tipe") as string; // 'masuk', 'pulang', 'izin', 'sakit'
     const keterangan = formData.get("keterangan") as string || "";
@@ -79,9 +90,6 @@ export async function POST(request: Request) {
     const latitude = parseFloat(latStr);
     const longitude = parseFloat(lngStr);
 
-    const profile = await prisma.mahasiswaProfile.findUnique({
-      where: { userId: user.id }
-    });
     const tempatMagangId = profile?.tempatMagangId;
 
     let targetLat = 0;

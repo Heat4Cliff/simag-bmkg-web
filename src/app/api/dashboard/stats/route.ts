@@ -20,7 +20,14 @@ export async function GET() {
   const todayStart = getJakartaDateISO(); // UTC midnight based on Jakarta date
   const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000 - 1); // 23:59:59.999
 
-  let stats = { kehadiran: 0, laporan: 0, modul: 0, statusHariIni: "Belum Absen", totalAbsensiDiisi: 0 };
+  let stats: {
+    kehadiran: number;
+    laporan: number;
+    modul: number;
+    statusHariIni: string;
+    totalAbsensiDiisi: number;
+    isPeriodeSelesai?: boolean;
+  } = { kehadiran: 0, laporan: 0, modul: 0, statusHariIni: "Belum Absen", totalAbsensiDiisi: 0, isPeriodeSelesai: false };
   let laporanTerbaru: {id: string; judul: string; tanggal: string; status: string; penulis?: string; tipe?: string}[] = [];
   let jadwalTerdekat: {id: string; judul: string; tanggal: string; jam?: string; tipe: string}[] = [];
   
@@ -36,6 +43,15 @@ export async function GET() {
   let periodeMagang = null;
 
   if (role === "MAHASISWA") {
+    // Ambil profil mahasiswa untuk cek periode magang
+    const mhsProfile = await prisma.mahasiswaProfile.findUnique({
+      where: { userId },
+      select: { periodeMulai: true, periodeSelesai: true }
+    });
+    const isPeriodeSelesai = Boolean(
+      mhsProfile?.periodeSelesai && today > new Date(mhsProfile.periodeSelesai)
+    );
+
     // Kehadiran bulan ini
     const kehadiran = await prisma.absensi.count({
       where: { userId, tanggal: { gte: monthStart, lte: monthEnd }, status: "HADIR" },
@@ -51,14 +67,16 @@ export async function GET() {
     const absenHariIni = await prisma.absensi.findFirst({
       where: { userId, tanggal: { gte: todayStart, lte: todayEnd } },
     });
-    const statusHariIni = absenHariIni ? absenHariIni.status : "Belum Absen";
+    const statusHariIni = absenHariIni
+      ? absenHariIni.status
+      : (isPeriodeSelesai ? "Selesai" : "Belum Absen");
 
     // Total seluruh absensi yang diisi
     const totalAbsensiDiisi = await prisma.absensi.count({
       where: { userId }
     });
 
-    stats = { kehadiran, laporan, modul, statusHariIni, totalAbsensiDiisi };
+    stats = { kehadiran, laporan, modul, statusHariIni, totalAbsensiDiisi, isPeriodeSelesai };
 
     // Laporan terbaru
     const laporan5 = await prisma.laporanHarian.findMany({
@@ -104,14 +122,11 @@ export async function GET() {
       alpa: absensiBulanIni.filter(a => a.status === "ALPA").length,
     };
 
-    const mhsProfile = await prisma.mahasiswaProfile.findUnique({
-      where: { userId },
-      select: { periodeMulai: true, periodeSelesai: true }
-    });
     if (mhsProfile && mhsProfile.periodeMulai && mhsProfile.periodeSelesai) {
       periodeMagang = {
         mulai: mhsProfile.periodeMulai.toISOString(),
-        selesai: mhsProfile.periodeSelesai.toISOString()
+        selesai: mhsProfile.periodeSelesai.toISOString(),
+        isPeriodeSelesai
       };
     }
   } else if (role === "DPL" || role === "MENTOR_INSTANSI") {

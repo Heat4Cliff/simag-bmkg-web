@@ -565,6 +565,41 @@ describe("SIMAG BMKG — Integration Testing (API, Auth, Validation & PostgreSQL
       assert.equal(riwayatBody.riwayat[0].status, "IZIN");
       assert.equal(riwayatBody.riwayat[0].keterangan, "Mengikuti seminar akademik fakultas");
     });
+
+    it("menolak presensi mahasiswa apabila periode magang telah selesai (403)", async () => {
+      setMockSession({
+        id: seededIds.mahasiswaUserId,
+        name: TEST_USERS.mahasiswa.nama,
+        email: TEST_USERS.mahasiswa.email,
+        role: "MAHASISWA",
+      });
+
+      // Update periodeSelesai ke masa lampau
+      await prisma.mahasiswaProfile.update({
+        where: { userId: seededIds.mahasiswaUserId },
+        data: { periodeSelesai: new Date("2026-10-30T09:59:59.000Z") },
+      });
+
+      const req = new Request("http://localhost:3200/api/absensi", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jenisAbsensi: "IZIN",
+          keterangan: "Mencoba izin setelah masa magang berakhir",
+        }),
+      });
+
+      const res = await absensiPost(req);
+      assert.equal(res.status, 403);
+      const body = await res.json();
+      assert.match(body.error, /periode magang anda telah selesai/i);
+
+      // Kembalikan periodeSelesai ke masa depan agar tidak memengaruhi test lain
+      await prisma.mahasiswaProfile.update({
+        where: { userId: seededIds.mahasiswaUserId },
+        data: { periodeSelesai: new Date("2026-11-30T23:59:59.000Z") },
+      });
+    });
   });
 
   describe("4. Integrasi Kalender Kegiatan & Pengaturan Sistem RBAC (/api/kalender & /api/pengaturan)", () => {

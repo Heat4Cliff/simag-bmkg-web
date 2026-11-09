@@ -27,7 +27,7 @@ const GrafikStatusAbsensi = dynamic(() => import("./GrafikStatusAbsensi"), { ssr
 interface StatCard {
   label: string;
   value: string | number;
-  sub?: string;
+  sub?: React.ReactNode;
   icon: React.ReactNode;
   color: string;
   bgColor: string;
@@ -94,6 +94,34 @@ export default function DashboardContent() {
       .catch(() => {});
   }, []);
 
+  const isPeriodeSelesai = Boolean(
+    (stats as any).isPeriodeSelesai ||
+    (periodeMagang as any)?.isPeriodeSelesai ||
+    (periodeMagang?.selesai && today > new Date(periodeMagang.selesai))
+  );
+
+  let hariMagang = (stats as any).totalAbsensiDiisi || 0;
+  let totalHariMagang = 90;
+  let persentase = 0;
+  
+  if (periodeMagang?.mulai) {
+    const start = new Date(periodeMagang.mulai);
+    const end = periodeMagang.selesai 
+      ? new Date(periodeMagang.selesai) 
+      : new Date(start.getTime() + 90 * 24 * 60 * 60 * 1000);
+    
+    // Total hari kalender magang
+    totalHariMagang = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    if (totalHariMagang <= 0) totalHariMagang = 90;
+    
+    let totalHariKerja = Math.round(totalHariMagang * (5 / 7));
+    if (totalHariKerja <= 0) totalHariKerja = 64; // fallback
+
+    persentase = isPeriodeSelesai ? 100 : Math.min(100, Math.round((hariMagang / totalHariKerja) * 100));
+  } else if (isPeriodeSelesai) {
+    persentase = 100;
+  }
+
   // Stat cards berdasarkan role
   const statCards: StatCard[] =
     role === "MAHASISWA"
@@ -127,22 +155,26 @@ export default function DashboardContent() {
           },
           {
             label: "Status Hari Ini",
-            value: stats.statusHariIni,
-            sub: <span suppressHydrationWarning>{formatTanggal(today)}</span>,
-            icon: <Clock className="w-5 h-5" />,
+            value: isPeriodeSelesai ? "Selesai" : stats.statusHariIni,
+            sub: isPeriodeSelesai ? (
+              <span className="text-emerald-600 font-medium">Periode magang tuntas</span>
+            ) : (
+              <span suppressHydrationWarning>{formatTanggal(today)}</span>
+            ),
+            icon: isPeriodeSelesai ? <CalendarCheck className="w-5 h-5" /> : <Clock className="w-5 h-5" />,
             color:
-              stats.statusHariIni === "Hadir"
+              isPeriodeSelesai || stats.statusHariIni === "Hadir" || stats.statusHariIni === "Selesai"
                 ? "text-green-700"
                 : stats.statusHariIni === "Belum Absen"
                 ? "text-yellow-700"
                 : "text-red-700",
             bgColor:
-              stats.statusHariIni === "Hadir"
+              isPeriodeSelesai || stats.statusHariIni === "Hadir" || stats.statusHariIni === "Selesai"
                 ? "bg-green-50"
                 : stats.statusHariIni === "Belum Absen"
                 ? "bg-yellow-50"
                 : "bg-red-50",
-            href: "/absensi",
+            href: isPeriodeSelesai ? "/riwayat/absensi" : "/absensi",
           },
         ]
       : role === "DPL"
@@ -223,28 +255,6 @@ export default function DashboardContent() {
           },
         ];
 
-  let hariMagang = (stats as any).totalAbsensiDiisi || 0;
-  let totalHariMagang = 90;
-  let persentase = 0;
-  
-  if (periodeMagang?.mulai) {
-    const start = new Date(periodeMagang.mulai);
-    const end = periodeMagang.selesai 
-      ? new Date(periodeMagang.selesai) 
-      : new Date(start.getTime() + 90 * 24 * 60 * 60 * 1000);
-    
-    // Total hari kalender magang (atau bisa total workdays, tapi kita asumsikan 90 hari total target)
-    totalHariMagang = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    if (totalHariMagang <= 0) totalHariMagang = 90;
-    
-    // Asumsi rata-rata hari kerja adalah 5 hari per minggu (22 hari/bulan)
-    // Jadi totalHariKerja ~ totalHariMagang * (5/7)
-    let totalHariKerja = Math.round(totalHariMagang * (5 / 7));
-    if (totalHariKerja <= 0) totalHariKerja = 64; // fallback
-
-    persentase = Math.min(100, Math.round((hariMagang / totalHariKerja) * 100));
-  }
-
   const sapaanCard = (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
       <div className="flex items-start gap-3">
@@ -258,7 +268,9 @@ export default function DashboardContent() {
           </p>
           <p className="text-xs text-gray-500 mt-1">
             {role === "MAHASISWA"
-              ? `Hari ke-${Math.max(1, hariMagang)} magang`
+              ? isPeriodeSelesai
+                ? "Periode Magang Selesai"
+                : `Hari ke-${Math.max(1, hariMagang)} magang`
               : role === "DPL"
               ? "Pembimbing Magang"
               : "Administrator Sistem"}
@@ -280,7 +292,9 @@ export default function DashboardContent() {
             />
           </div>
           <p className="text-xs text-gray-400 mt-1.5">
-            Periode magang {totalHariMagang} hari
+            {isPeriodeSelesai
+              ? `Periode magang tuntas (${totalHariMagang} hari)`
+              : `Periode magang ${totalHariMagang} hari`}
           </p>
         </div>
       )}
@@ -391,30 +405,55 @@ export default function DashboardContent() {
 
           {/* Quick Action - Absen (hanya Mahasiswa) */}
           {role === "MAHASISWA" && (
-            <div className="bg-gradient-to-r from-[#1E8A3C] to-[#26A64B] rounded-2xl p-5 text-white flex items-center justify-between shadow-lg">
-              <div>
-                <p suppressHydrationWarning className="text-green-200 text-xs font-medium mb-1">
-                  {formatTanggal(today)}
-                </p>
-                <BlurText 
-                  text="Sudah Absen Hari Ini?"
-                  delay={0.05}
-                  className="text-lg font-bold mb-1 justify-start"
-                />
-                <p className="text-green-200 text-sm">
-                  {stats.statusHariIni === "Hadir"
-                    ? "✅ Absensi Anda sudah tercatat."
-                    : "Jangan lupa absen masuk sebelum jam kerja!"}
-                </p>
+            isPeriodeSelesai ? (
+              <div className="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-2xl p-5 text-white flex items-center justify-between shadow-lg">
+                <div>
+                  <p suppressHydrationWarning className="text-emerald-200 text-xs font-medium mb-1">
+                    {formatTanggal(today)}
+                  </p>
+                  <BlurText 
+                    text="Periode Magang Telah Selesai"
+                    delay={0.05}
+                    className="text-lg font-bold mb-1 justify-start"
+                  />
+                  <p className="text-emerald-100 text-sm">
+                    Terima kasih atas dedikasi dan kontribusi Anda selama masa magang di BMKG!
+                  </p>
+                </div>
+                <Link
+                  href="/riwayat/absensi"
+                  className="flex items-center gap-2 bg-white text-emerald-700 font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-emerald-50 transition-colors flex-shrink-0 shadow"
+                >
+                  <CalendarCheck className="w-4 h-4" />
+                  Lihat Riwayat
+                </Link>
               </div>
-              <Link
-                href="/absensi"
-                className="flex items-center gap-2 bg-white text-[#1E8A3C] font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-green-50 transition-colors flex-shrink-0 shadow"
-              >
-                <Zap className="w-4 h-4" />
-                Absen Sekarang
-              </Link>
-            </div>
+            ) : (
+              <div className="bg-gradient-to-r from-[#1E8A3C] to-[#26A64B] rounded-2xl p-5 text-white flex items-center justify-between shadow-lg">
+                <div>
+                  <p suppressHydrationWarning className="text-green-200 text-xs font-medium mb-1">
+                    {formatTanggal(today)}
+                  </p>
+                  <BlurText 
+                    text="Sudah Absen Hari Ini?"
+                    delay={0.05}
+                    className="text-lg font-bold mb-1 justify-start"
+                  />
+                  <p className="text-green-200 text-sm">
+                    {stats.statusHariIni === "Hadir"
+                      ? "✅ Absensi Anda sudah tercatat."
+                      : "Jangan lupa absen masuk sebelum jam kerja!"}
+                  </p>
+                </div>
+                <Link
+                  href="/absensi"
+                  className="flex items-center gap-2 bg-white text-[#1E8A3C] font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-green-50 transition-colors flex-shrink-0 shadow"
+                >
+                  <Zap className="w-4 h-4" />
+                  Absen Sekarang
+                </Link>
+              </div>
+            )
           )}
 
           {/* Kartu Sapaan Khusus Mahasiswa (Mobile) */}
