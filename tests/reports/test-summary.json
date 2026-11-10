@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-11-04T01:55:49.228Z",
+  "generatedAt": "2026-11-10T23:50:59.666Z",
   "project": "SIMAG BMKG",
   "bdd": {
-    "features": 3,
+    "features": 5,
     "scenarios": {
-      "total": 11,
-      "passed": 11,
+      "total": 17,
+      "passed": 17,
       "failed": 0
     },
     "steps": {
-      "total": 52,
-      "passed": 52,
+      "total": 77,
+      "passed": 77,
       "failed": 0,
       "skipped": 0
     },
