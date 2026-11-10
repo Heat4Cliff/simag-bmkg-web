@@ -100,7 +100,7 @@ export default function DashboardContent() {
     (periodeMagang?.selesai && today > new Date(periodeMagang.selesai))
   );
 
-  let hariMagang = (stats as any).totalAbsensiDiisi || 0;
+  const hariMagang = (stats as any).totalAbsensiDiisi || 0;
   let totalHariMagang = 90;
   let persentase = 0;
   

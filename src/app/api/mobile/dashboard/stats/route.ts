@@ -28,14 +28,14 @@ export async function GET(request: Request) {
       isPeriodeSelesai?: boolean;
     } = { kehadiran: 0, laporan: 0, modul: 0, statusHariIni: "Belum Absen", totalAbsensiDiisi: 0, isPeriodeSelesai: false };
     let laporanTerbaru: any[] = [];
-    let jadwalTerdekat: any[] = [];
+    const jadwalTerdekat: any[] = [];
     
     let trenAktivitas: { hari: string; laporan: number; modul: number }[] = [];
     let distribusiAkun: { role: string; count: number }[] = [];
     let distribusiDokumen: { status: string; count: number }[] = [];
     let aktivitasGlobal: { id: string; user: string; judul: string; tipe: string; waktu: string }[] = [];
     let trenKehadiran: { hari: string; hadir: number; telat: number }[] = [];
-    let kalenderEvents: number[] = [];
+    const kalenderEvents: number[] = [];
     let statusAbsensiList = { hadir: 0, telat: 0, izin: 0, alpa: 0, sakit: 0 };
     let periodeMagang = null;
 

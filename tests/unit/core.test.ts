@@ -161,6 +161,11 @@ describe("kalender presensi: cekLibur", () => {
     assert.equal(cekLibur(timestamp).isLibur, true);
     assert.equal(cekLibur("2024-01-01").isLibur, true);
   });
+
+  it("memverifikasi tabel ID_HOLIDAYS memuat daftar hari libur nasional", () => {
+    assert.ok(Object.keys(ID_HOLIDAYS).length > 20);
+    assert.ok("2024-01-01" in ID_HOLIDAYS);
+  });
 });
 
 // ============================================================================
@@ -194,6 +199,11 @@ describe("kalender kegiatan: cekPeringatan", () => {
     assert.equal(cekPeringatan("2026-04-22"), "Hari Bumi");
     assert.equal(cekPeringatan("2026-06-05"), "Hari Lingkungan Hidup Sedunia");
     assert.equal(cekPeringatan("2026-12-01"), "Hari AIDS Sedunia");
+  });
+
+  it("memverifikasi tabel COMMEMORATIVE_DAYS memuat hari peringatan penting", () => {
+    assert.ok(Object.keys(COMMEMORATIVE_DAYS).length > 5);
+    assert.ok("10-28" in COMMEMORATIVE_DAYS);
   });
 });
 
@@ -520,11 +530,17 @@ describe("geolocation cache storage", () => {
       removeItem: (k: string) => storage.delete(k),
     };
 
+    type WindowMockScope = typeof globalThis & {
+      window?: unknown;
+      sessionStorage?: typeof mockSessionStorage;
+    };
+    const scope = globalThis as WindowMockScope;
+
     // Pasang mock window
-    const originalWindow = (globalThis as any).window;
-    const originalSessionStorage = (globalThis as any).sessionStorage;
-    (globalThis as any).window = globalThis;
-    (globalThis as any).sessionStorage = mockSessionStorage;
+    const originalWindow = scope.window;
+    const originalSessionStorage = scope.sessionStorage;
+    scope.window = globalThis;
+    scope.sessionStorage = mockSessionStorage;
 
     try {
       const coord: GeoCoordinate = {
@@ -552,14 +568,14 @@ describe("geolocation cache storage", () => {
     } finally {
       // Kembalikan ke state asli
       if (originalWindow !== undefined) {
-        (globalThis as any).window = originalWindow;
+        scope.window = originalWindow;
       } else {
-        delete (globalThis as any).window;
+        delete scope.window;
       }
       if (originalSessionStorage !== undefined) {
-        (globalThis as any).sessionStorage = originalSessionStorage;
+        scope.sessionStorage = originalSessionStorage;
       } else {
-        delete (globalThis as any).sessionStorage;
+        delete scope.sessionStorage;
       }
     }
   });

@@ -151,7 +151,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     const existing = await prisma.laporanHarian.findUnique({ where: { id: laporanId } });
     if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
     
-    // @ts-ignore
+    // @ts-expect-error Extended session user contains role
     const role = session.user?.role;
     
     if (role !== "SUPERADMIN") {

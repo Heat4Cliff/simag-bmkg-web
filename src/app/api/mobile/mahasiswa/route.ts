@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('q') || '';
 
-    let whereClause: any = {};
+    const whereClause: any = {};
     if (search) {
       whereClause.user = {
         nama: { contains: search, mode: 'insensitive' }

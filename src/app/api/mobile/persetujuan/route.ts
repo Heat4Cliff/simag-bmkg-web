@@ -32,8 +32,8 @@ export async function GET(request: Request) {
       }
     }
 
-    let laporanQuery: any = { status: "TERKIRIM" };
-    let modulQuery: any = { statusReview: "TERKIRIM" };
+    const laporanQuery: any = { status: "TERKIRIM" };
+    const modulQuery: any = { statusReview: "TERKIRIM" };
 
     if (user.role === 'DPL' || user.role === 'MENTOR_INSTANSI') {
       laporanQuery.userId = { in: userIds };
