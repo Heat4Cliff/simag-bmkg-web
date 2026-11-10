@@ -53,6 +53,17 @@ describe("SIMAG BMKG — Integration Testing (API, Auth, Validation & PostgreSQL
   let kalenderPost: typeof import("../../src/app/api/kalender/route").POST;
   let pengaturanGet: typeof import("../../src/app/api/pengaturan/route").GET;
   let pengaturanPatch: typeof import("../../src/app/api/pengaturan/route").PATCH;
+  let modulGet: typeof import("../../src/app/api/modul-praktikum/route").GET;
+  let modulPost: typeof import("../../src/app/api/modul-praktikum/route").POST;
+  let modulByIdGet: typeof import("../../src/app/api/modul-praktikum/[id]/route").GET;
+  let modulByIdPatch: typeof import("../../src/app/api/modul-praktikum/[id]/route").PATCH;
+  let modulByIdPut: typeof import("../../src/app/api/modul-praktikum/[id]/route").PUT;
+  let adminAkunPost: typeof import("../../src/app/api/admin/akun/route").POST;
+  let profilGet: typeof import("../../src/app/api/profil/route").GET;
+  let profilPatch: typeof import("../../src/app/api/profil/route").PATCH;
+  let profilPasswordPatch: typeof import("../../src/app/api/profil/password/route").PATCH;
+  let notifikasiPatch: typeof import("../../src/app/api/notifikasi/route").PATCH;
+  let notifikasiCountGet: typeof import("../../src/app/api/notifikasi/count/route").GET;
 
   const seededIds = {
     mahasiswaUserId: "int-user-mhs-001",
@@ -95,6 +106,31 @@ describe("SIMAG BMKG — Integration Testing (API, Auth, Validation & PostgreSQL
     const pengaturanRoute = await import("../../src/app/api/pengaturan/route");
     pengaturanGet = pengaturanRoute.GET;
     pengaturanPatch = pengaturanRoute.PATCH;
+
+    const modulRoute = await import("../../src/app/api/modul-praktikum/route");
+    modulGet = modulRoute.GET;
+    modulPost = modulRoute.POST;
+
+    const modulIdRoute = await import("../../src/app/api/modul-praktikum/[id]/route");
+    modulByIdGet = modulIdRoute.GET;
+    modulByIdPatch = modulIdRoute.PATCH;
+    modulByIdPut = modulIdRoute.PUT;
+
+    const adminAkunRoute = await import("../../src/app/api/admin/akun/route");
+    adminAkunPost = adminAkunRoute.POST;
+
+    const profilRoute = await import("../../src/app/api/profil/route");
+    profilGet = profilRoute.GET;
+    profilPatch = profilRoute.PATCH;
+
+    const profilPasswordRoute = await import("../../src/app/api/profil/password/route");
+    profilPasswordPatch = profilPasswordRoute.PATCH;
+
+    const notifikasiRoute = await import("../../src/app/api/notifikasi/route");
+    notifikasiPatch = notifikasiRoute.PATCH;
+
+    const notifikasiCountRoute = await import("../../src/app/api/notifikasi/count/route");
+    notifikasiCountGet = notifikasiCountRoute.GET;
 
     // Seed isolated test records into simag_bmkg_test
     const passwordHash = await bcrypt.hash(TEST_USERS.mahasiswa.password, 10);
@@ -693,7 +729,439 @@ describe("SIMAG BMKG — Integration Testing (API, Auth, Validation & PostgreSQL
     });
   });
 
-  describe("Suite 5: Hardening & Keamanan Isolasi Database Pengujian (Regression Tests)", () => {
+  describe("5. Integrasi Modul Praktikum, Validasi Relasi & Alur Review Pembimbing", () => {
+    let createdModulId: string;
+
+    it("menolak request GET /api/modul-praktikum jika unauthenticated (401)", async () => {
+      setMockSession(null);
+      const res = await modulGet();
+      assert.equal(res.status, 401);
+    });
+
+    it("menolak POST /api/modul-praktikum jika field wajib tidak lengkap (400)", async () => {
+      setMockSession({
+        id: seededIds.mahasiswaUserId,
+        name: TEST_USERS.mahasiswa.nama,
+        email: TEST_USERS.mahasiswa.email,
+        role: "MAHASISWA",
+      });
+
+      const formData = new FormData();
+      formData.append("judul", "Praktikum Observasi Meteorologi Permukaan");
+      // omit kategoriId and konten
+      const req = new Request("http://localhost:3200/api/modul-praktikum", {
+        method: "POST",
+        body: formData,
+      });
+
+      const res = await modulPost(req);
+      assert.equal(res.status, 400);
+      const body = await res.json();
+      assert.match(body.error, /data tidak lengkap/i);
+    });
+
+    it("menyimpan modul praktikum baru dan otomatis membuat notifikasi untuk DPL & Mentor", async () => {
+      setMockSession({
+        id: seededIds.mahasiswaUserId,
+        name: TEST_USERS.mahasiswa.nama,
+        email: TEST_USERS.mahasiswa.email,
+        role: "MAHASISWA",
+      });
+
+      const formData = new FormData();
+      formData.append("judul", "Pengamatan Sinoptik Menggunakan Anemometer & Barometer");
+      formData.append("kategoriId", TEST_KATEGORI_MODUL.id);
+      formData.append("konten", "Modul panduan langkah-langkah kalibrasi dan pembacaan alat.");
+
+      const req = new Request("http://localhost:3200/api/modul-praktikum", {
+        method: "POST",
+        body: formData,
+      });
+
+      const res = await modulPost(req);
+      assert.equal(res.status, 200);
+      const body = await res.json();
+      assert.equal(body.modul.judul, "Pengamatan Sinoptik Menggunakan Anemometer & Barometer");
+      assert.equal(body.modul.statusReview, "TERKIRIM");
+      createdModulId = body.modul.id;
+
+      // Verifikasi notifikasi tersimpan di database untuk DPL
+      const dplNotification = await prisma.notifikasi.findFirst({
+        where: {
+          userId: seededIds.dplUserId,
+          judul: "Modul Praktikum Baru",
+        },
+      });
+      assert.notEqual(dplNotification, null);
+      assert.match(dplNotification!.pesan, /Pengamatan Sinoptik/);
+
+      // Verifikasi notifikasi tersimpan di database untuk Mentor
+      const mentorNotification = await prisma.notifikasi.findFirst({
+        where: {
+          userId: seededIds.mentorUserId,
+          judul: "Modul Praktikum Baru",
+        },
+      });
+      assert.notEqual(mentorNotification, null);
+    });
+
+    it("mengizinkan pembimbing (DPL) melihat detail modul dan memberikan review (PATCH) DISETUJUI", async () => {
+      setMockSession({
+        id: seededIds.dplUserId,
+        name: TEST_USERS.dpl.nama,
+        email: TEST_USERS.dpl.email,
+        role: "DPL",
+      });
+
+      // DPL membaca detail modul
+      const getRes = await modulByIdGet(
+        new Request(`http://localhost:3200/api/modul-praktikum/${createdModulId}`),
+        { params: Promise.resolve({ id: createdModulId }) }
+      );
+      assert.equal(getRes.status, 200);
+      const getBody = await getRes.json();
+      assert.equal(getBody.modul.judul, "Pengamatan Sinoptik Menggunakan Anemometer & Barometer");
+
+      // DPL menyetujui modul
+      const patchReq = new Request(`http://localhost:3200/api/modul-praktikum/${createdModulId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          statusReview: "DISETUJUI",
+          catatanReview: "Langkah-langkah observasi sudah sesuai standar WMO dan BMKG.",
+        }),
+      });
+
+      const patchRes = await modulByIdPatch(patchReq, {
+        params: Promise.resolve({ id: createdModulId }),
+      });
+      assert.equal(patchRes.status, 200);
+      const patchBody = await patchRes.json();
+      assert.equal(patchBody.modul.statusReview, "DISETUJUI");
+      assert.equal(patchBody.modul.reviewedBy, seededIds.dplUserId);
+
+      // Verifikasi notifikasi terkirim ke mahasiswa
+      const mhsNotification = await prisma.notifikasi.findFirst({
+        where: {
+          userId: seededIds.mahasiswaUserId,
+          judul: "Status Modul Diperbarui",
+        },
+      });
+      assert.notEqual(mhsNotification, null);
+      assert.match(mhsNotification!.pesan, /telah disetujui/i);
+    });
+
+    it("menolak mahasiswa mengedit modul yang sudah DISETUJUI melalui PUT (400)", async () => {
+      setMockSession({
+        id: seededIds.mahasiswaUserId,
+        name: TEST_USERS.mahasiswa.nama,
+        email: TEST_USERS.mahasiswa.email,
+        role: "MAHASISWA",
+      });
+
+      const formData = new FormData();
+      formData.append("judul", "Pengamatan Sinoptik (Revisi)");
+      formData.append("kategoriId", TEST_KATEGORI_MODUL.id);
+      formData.append("konten", "Konten baru setelah disetujui.");
+
+      const putReq = new Request(`http://localhost:3200/api/modul-praktikum/${createdModulId}`, {
+        method: "PUT",
+        body: formData,
+      });
+
+      const putRes = await modulByIdPut(putReq, {
+        params: Promise.resolve({ id: createdModulId }),
+      });
+      assert.equal(putRes.status, 400);
+      const putBody = await putRes.json();
+      assert.match(putBody.error, /tidak dapat diedit karena sudah disetujui/i);
+    });
+  });
+
+  describe("6. Integrasi Manajemen Akun RBAC, Profil Pengguna & Notifikasi", () => {
+    let createdNewUserId: string;
+
+    it("menolak pembuatan akun oleh pengguna selain SUPERADMIN (401)", async () => {
+      setMockSession({
+        id: seededIds.mahasiswaUserId,
+        name: TEST_USERS.mahasiswa.nama,
+        email: TEST_USERS.mahasiswa.email,
+        role: "MAHASISWA",
+      });
+
+      const req = new Request("http://localhost:3200/api/admin/akun", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nama: "Akun Testing Baru",
+          email: "testing.akun@bmkg.go.id",
+          password: "password123",
+          role: "MAHASISWA",
+        }),
+      });
+
+      const res = await adminAkunPost(req);
+      assert.equal(res.status, 401);
+    });
+
+    it("mengizinkan SUPERADMIN membuat akun mahasiswa baru lengkap dengan transaksi relasi profil", async () => {
+      setMockSession({
+        id: seededIds.adminUserId,
+        name: TEST_USERS.superadmin.nama,
+        email: TEST_USERS.superadmin.email,
+        role: "SUPERADMIN",
+      });
+
+      const req = new Request("http://localhost:3200/api/admin/akun", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nama: "Mahasiswa Integrasi Unugha",
+          email: "mhs.integrasi@unugha.ac.id",
+          password: "PasswordRahasia!123",
+          role: "MAHASISWA",
+        }),
+      });
+
+      const res = await adminAkunPost(req);
+      assert.equal(res.status, 200);
+      const body = await res.json();
+      assert.equal(body.user.email, "mhs.integrasi@unugha.ac.id");
+      createdNewUserId = body.user.id;
+
+      // Verifikasi profil mahasiswa otomatis dibuat melalui transaksi
+      const createdProfile = await prisma.mahasiswaProfile.findUnique({
+        where: { userId: createdNewUserId },
+      });
+      assert.notEqual(createdProfile, null);
+    });
+
+    it("mengizinkan pengguna membaca profil dan mengubah profil melalui PATCH /api/profil", async () => {
+      setMockSession({
+        id: createdNewUserId,
+        name: "Mahasiswa Integrasi Unugha",
+        email: "mhs.integrasi@unugha.ac.id",
+        role: "MAHASISWA",
+      });
+
+      const getRes = await profilGet();
+      assert.equal(getRes.status, 200);
+      const getBody = await getRes.json();
+      assert.equal(getBody.nama, "Mahasiswa Integrasi Unugha");
+      assert.equal(getBody.role, "MAHASISWA");
+
+      const patchReq = new Request("http://localhost:3200/api/profil", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nama: "Mahasiswa Integrasi Unugha (Updated)",
+          email: "mhs.integrasi.updated@unugha.ac.id",
+          username: "mhsintegrasi",
+          noHp: "081234567890",
+        }),
+      });
+
+      const patchRes = await profilPatch(patchReq);
+      assert.equal(patchRes.status, 200);
+
+      // Verifikasi pembaruan data tersimpan di database
+      const updatedUser = await prisma.user.findUnique({
+        where: { id: createdNewUserId },
+        include: { mahasiswaProfile: true },
+      });
+      assert.equal(updatedUser?.nama, "Mahasiswa Integrasi Unugha (Updated)");
+      assert.equal(updatedUser?.email, "mhs.integrasi.updated@unugha.ac.id");
+      assert.equal(updatedUser?.username, "mhsintegrasi");
+      assert.equal(updatedUser?.mahasiswaProfile?.noHp, "081234567890");
+    });
+
+    it("mengizinkan pengguna mengubah password melalui PATCH /api/profil/password", async () => {
+      setMockSession({
+        id: createdNewUserId,
+        name: "Mahasiswa Integrasi Unugha (Updated)",
+        email: "mhs.integrasi.updated@unugha.ac.id",
+        role: "MAHASISWA",
+      });
+
+      // Menolak jika password lama salah
+      const wrongOldReq = new Request("http://localhost:3200/api/profil/password", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          oldPassword: "WrongPassword999",
+          newPassword: "NewPasswordValid!123",
+          confirmPassword: "NewPasswordValid!123",
+        }),
+      });
+
+      const wrongRes = await profilPasswordPatch(wrongOldReq);
+      assert.equal(wrongRes.status, 400);
+
+      // Berhasil jika password lama benar
+      const validReq = new Request("http://localhost:3200/api/profil/password", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          oldPassword: "PasswordRahasia!123",
+          newPassword: "NewPasswordValid!123",
+          confirmPassword: "NewPasswordValid!123",
+        }),
+      });
+
+      const validRes = await profilPasswordPatch(validReq);
+      assert.equal(validRes.status, 200);
+
+      // Verifikasi login password baru menggunakan bcrypt
+      const dbUser = await prisma.user.findUnique({ where: { id: createdNewUserId } });
+      const isNewMatch = await bcrypt.compare("NewPasswordValid!123", dbUser!.passwordHash);
+      assert.equal(isNewMatch, true);
+    });
+
+    it("mengelola status notifikasi dibaca dan penghitungan unread melalui /api/notifikasi", async () => {
+      setMockSession({
+        id: seededIds.mahasiswaUserId,
+        name: TEST_USERS.mahasiswa.nama,
+        email: TEST_USERS.mahasiswa.email,
+        role: "MAHASISWA",
+      });
+
+      const unreadCountRes = await notifikasiCountGet();
+      assert.equal(unreadCountRes.status, 200);
+      const unreadCountBody = await unreadCountRes.json();
+      assert.ok(unreadCountBody.count > 0);
+
+      // Tandai semua notifikasi sudah dibaca
+      const markReadRes = await notifikasiPatch();
+      assert.equal(markReadRes.status, 200);
+
+      // Verifikasi count menjadi 0
+      const afterCountRes = await notifikasiCountGet();
+      const afterCountBody = await afterCountRes.json();
+      assert.equal(afterCountBody.count, 0);
+    });
+  });
+
+  describe("7. Integritas Relasi Database, Constraints & Cascade Deletion PostgreSQL", () => {
+    it("menegakkan composite unique constraint @@unique([userId, tanggal]) pada tabel Absensi", async () => {
+      const fixedDate = new Date("2026-11-20T00:00:00.000Z");
+
+      // Insert record absensi pertama
+      const record1 = await prisma.absensi.create({
+        data: {
+          userId: seededIds.mahasiswaUserId,
+          tanggal: fixedDate,
+          status: "HADIR",
+          jamMasuk: new Date("2026-11-20T07:15:00.000Z"),
+        },
+      });
+      assert.ok(record1.id);
+
+      // Mencoba insert record absensi kedua dengan userId dan tanggal yang sama persis
+      await assert.rejects(
+        () =>
+          prisma.absensi.create({
+            data: {
+              userId: seededIds.mahasiswaUserId,
+              tanggal: fixedDate,
+              status: "IZIN",
+              keterangan: "Mencoba input ganda di tanggal yang sama",
+            },
+          }),
+        (err: any) => {
+          // Prisma unique constraint violation code is P2002
+          assert.equal(err.code, "P2002");
+          return true;
+        }
+      );
+
+      // Bersihkan record pengujian ini
+      await prisma.absensi.delete({ where: { id: record1.id } });
+    });
+
+    it("menegakkan foreign key constraint pada ModulPraktikum terhadap KategoriModul yang tidak valid", async () => {
+      await assert.rejects(
+        () =>
+          prisma.modulPraktikum.create({
+            data: {
+              userId: seededIds.mahasiswaUserId,
+              judul: "Modul dengan Kategori Fiktif",
+              konten: "Konten modul pengujian constraint foreign key",
+              kategoriId: "kategori-yang-pasti-tidak-ada-999",
+            },
+          }),
+        (err: any) => {
+          // Prisma foreign key constraint code is P2003
+          assert.equal(err.code, "P2003");
+          return true;
+        }
+      );
+    });
+
+    it("melakukan cascade delete seluruh data terkait (profile, session, absensi, laporan) saat User dihapus", async () => {
+      // Buat user sementara khusus pengujian cascade delete
+      const tempUser = await prisma.user.create({
+        data: {
+          nama: "User Uji Cascade",
+          email: "cascade.test@bmkg.go.id",
+          passwordHash: "dummyhash",
+          role: "MAHASISWA",
+          sessions: {
+            create: {
+              token: "dummy-session-token-cascade-12345",
+              expiresAt: new Date(Date.now() + 3600000),
+            },
+          },
+          mahasiswaProfile: {
+            create: {
+              nim: "12345678",
+              programStudi: "Teknik Geofisika",
+            },
+          },
+          absensi: {
+            create: {
+              tanggal: new Date("2026-11-21T00:00:00.000Z"),
+              status: "HADIR",
+            },
+          },
+          laporanHarian: {
+            create: {
+              tanggal: new Date("2026-11-21T00:00:00.000Z"),
+              judul: "Laporan Harian Uji Cascade",
+              deskripsi: "Deskripsi kegiatan uji cascade",
+              status: "DRAFT",
+            },
+          },
+        },
+      });
+
+      const tempUserId = tempUser.id;
+
+      // Verifikasi seluruh entitas anak ada di database
+      const profileBefore = await prisma.mahasiswaProfile.findUnique({ where: { userId: tempUserId } });
+      const sessionBefore = await prisma.session.findFirst({ where: { userId: tempUserId } });
+      const absensiBefore = await prisma.absensi.findFirst({ where: { userId: tempUserId } });
+      const laporanBefore = await prisma.laporanHarian.findFirst({ where: { userId: tempUserId } });
+      assert.notEqual(profileBefore, null);
+      assert.notEqual(sessionBefore, null);
+      assert.notEqual(absensiBefore, null);
+      assert.notEqual(laporanBefore, null);
+
+      // Hapus User induk
+      await prisma.user.delete({ where: { id: tempUserId } });
+
+      // Verifikasi seluruh entitas anak otomatis terhapus secara CASCADE di PostgreSQL
+      const profileAfter = await prisma.mahasiswaProfile.findUnique({ where: { userId: tempUserId } });
+      const sessionAfter = await prisma.session.findFirst({ where: { userId: tempUserId } });
+      const absensiAfter = await prisma.absensi.findFirst({ where: { userId: tempUserId } });
+      const laporanAfter = await prisma.laporanHarian.findFirst({ where: { userId: tempUserId } });
+      assert.equal(profileAfter, null);
+      assert.equal(sessionAfter, null);
+      assert.equal(absensiAfter, null);
+      assert.equal(laporanAfter, null);
+    });
+  });
+
+  describe("Suite 8: Hardening & Keamanan Isolasi Database Pengujian (Regression Tests)", () => {
     it("menolak koneksi database utama/production (simag_bmkg & postgres) pada assertSafeTestDatabaseUrl", () => {
       assert.throws(
         () => assertSafeTestDatabaseUrl("postgresql://postgres:secret@127.0.0.1:5432/simag_bmkg"),
@@ -754,7 +1222,7 @@ describe("SIMAG BMKG — Integration Testing (API, Auth, Validation & PostgreSQL
         // Ketika SIMAG_ALLOW_TEST_AUTH !== "true", auth() wajib mengabaikan SIMAG_TEST_SESSION
         // dan mendelegasikan ke NextAuth asli (yang membutuhkan Next.js request store headers())
         await assert.rejects(
-          () => laporanGet(new Request("http://localhost:3200/api/laporan-harian")),
+          () => laporanGet(),
           /headers.*outside a request scope/i
         );
       } finally {
