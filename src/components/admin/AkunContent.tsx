@@ -284,6 +284,7 @@ export default function AkunContent() {
                           <div 
                             className="fixed inset-0 z-40" 
                             onClick={() => setOpenDropdownId(null)}
+                            aria-hidden="true"
                           />
                           <div className="absolute right-8 top-10 w-40 bg-white border border-gray-100 rounded-xl shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 duration-100 text-left">
                             <button

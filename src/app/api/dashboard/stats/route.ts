@@ -187,7 +187,7 @@ export async function GET() {
       telat: absenTelat,
       izin: absenIzin,
       alpa: absenAlpa,
-      // @ts-ignore
+      // @ts-expect-error Status sakit may be dynamically assigned in statistics map
       sakit: absenSakit
     };
 
@@ -304,7 +304,7 @@ export async function GET() {
       telat: absenTelat,
       izin: absenIzin,
       alpa: absenAlpa,
-      // @ts-ignore
+      // @ts-expect-error Status sakit may be dynamically assigned in statistics map
       sakit: absenSakit
     };
 

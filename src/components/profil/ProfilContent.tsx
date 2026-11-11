@@ -199,12 +199,13 @@ export default function ProfilContent() {
             )}
           </div>
           {isEditing && (
-            <div 
+            <button
+              type="button"
               onClick={() => fileInputRef.current?.click()}
               className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <Camera className="w-6 h-6 text-white" />
-            </div>
+            </button>
           )}
           <input 
             type="file" 

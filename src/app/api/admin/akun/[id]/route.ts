@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
@@ -46,7 +47,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (body.email !== undefined) updateData.email = body.email;
     if (body.role !== undefined) updateData.role = body.role;
     if (body.password) {
-      const bcrypt = require("bcryptjs");
       updateData.passwordHash = await bcrypt.hash(body.password, 10);
     }
 

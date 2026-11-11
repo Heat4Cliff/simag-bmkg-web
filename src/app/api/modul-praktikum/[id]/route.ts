@@ -58,7 +58,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const existing = await prisma.modulPraktikum.findUnique({ where: { id: modulId } });
     if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
     
-    // @ts-ignore
+    // @ts-expect-error Extended session user contains role
     const role = session.user?.role;
     if (role !== "SUPERADMIN" && existing.userId !== session.user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -197,7 +197,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
     if (!modul) return NextResponse.json({ error: "Not found" }, { status: 404 });
     
-    // @ts-ignore
+    // @ts-expect-error Extended session user contains role
     const role = session.user?.role;
     if (role !== "SUPERADMIN") {
       if (modul.userId !== session.user.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

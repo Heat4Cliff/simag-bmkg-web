@@ -14,7 +14,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 1537816103
+              "duration": 62020599
             }
           },
           {
@@ -23,11 +23,11 @@
             "line": 7,
             "name": "pengguna membuka halaman login SIMAG",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:6"
+              "location": "tests\\step-definitions\\authentication.steps.ts:6"
             },
             "result": {
               "status": "passed",
-              "duration": 1891256517
+              "duration": 166411099
             }
           },
           {
@@ -36,11 +36,11 @@
             "line": 8,
             "name": "pengguna memasukkan kredensial yang valid",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:44"
+              "location": "tests\\step-definitions\\authentication.steps.ts:44"
             },
             "result": {
               "status": "passed",
-              "duration": 787011953
+              "duration": 118832500
             }
           },
           {
@@ -49,11 +49,11 @@
             "line": 9,
             "name": "menekan tombol login",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:76"
+              "location": "tests\\step-definitions\\authentication.steps.ts:76"
             },
             "result": {
               "status": "passed",
-              "duration": 236109508
+              "duration": 45357899
             }
           },
           {
@@ -62,11 +62,11 @@
             "line": 10,
             "name": "pengguna berhasil masuk",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:80"
+              "location": "tests\\step-definitions\\authentication.steps.ts:80"
             },
             "result": {
               "status": "passed",
-              "duration": 3252545643
+              "duration": 495974400
             }
           },
           {
@@ -75,11 +75,11 @@
             "line": 11,
             "name": "dashboard ditampilkan",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:89"
+              "location": "tests\\step-definitions\\authentication.steps.ts:89"
             },
             "result": {
               "status": "passed",
-              "duration": 262590330
+              "duration": 20115699
             }
           },
           {
@@ -87,7 +87,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 124893563
+              "duration": 8691100
             }
           }
         ],
@@ -106,7 +106,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 413903252
+              "duration": 50255999
             }
           },
           {
@@ -115,11 +115,11 @@
             "line": 14,
             "name": "pengguna membuka halaman login SIMAG",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:6"
+              "location": "tests\\step-definitions\\authentication.steps.ts:6"
             },
             "result": {
               "status": "passed",
-              "duration": 1556227396
+              "duration": 137325600
             }
           },
           {
@@ -128,11 +128,11 @@
             "line": 15,
             "name": "pengguna memasukkan kredensial yang tidak valid",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:59"
+              "location": "tests\\step-definitions\\authentication.steps.ts:59"
             },
             "result": {
               "status": "passed",
-              "duration": 532517133
+              "duration": 121397500
             }
           },
           {
@@ -141,11 +141,11 @@
             "line": 16,
             "name": "menekan tombol login",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:76"
+              "location": "tests\\step-definitions\\authentication.steps.ts:76"
             },
             "result": {
               "status": "passed",
-              "duration": 206105845
+              "duration": 48406599
             }
           },
           {
@@ -154,11 +154,11 @@
             "line": 17,
             "name": "sistem menolak login",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:95"
+              "location": "tests\\step-definitions\\authentication.steps.ts:95"
             },
             "result": {
               "status": "passed",
-              "duration": 921988369
+              "duration": 146541299
             }
           },
           {
@@ -167,11 +167,11 @@
             "line": 18,
             "name": "menampilkan pesan error yang sesuai",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:107"
+              "location": "tests\\step-definitions\\authentication.steps.ts:107"
             },
             "result": {
               "status": "passed",
-              "duration": 221923378
+              "duration": 22190400
             }
           },
           {
@@ -179,7 +179,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 50183960
+              "duration": 6939599
             }
           }
         ],
@@ -198,7 +198,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 301886544
+              "duration": 57001800
             }
           },
           {
@@ -207,11 +207,11 @@
             "line": 21,
             "name": "pengguna belum login",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:12"
+              "location": "tests\\step-definitions\\authentication.steps.ts:12"
             },
             "result": {
               "status": "passed",
-              "duration": 49188371
+              "duration": 6100099
             }
           },
           {
@@ -220,11 +220,11 @@
             "line": 22,
             "name": "pengguna mengakses halaman protected secara langsung",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:113"
+              "location": "tests\\step-definitions\\authentication.steps.ts:113"
             },
             "result": {
               "status": "passed",
-              "duration": 835777430
+              "duration": 84344999
             }
           },
           {
@@ -233,11 +233,11 @@
             "line": 23,
             "name": "sistem menolak akses atau mengarahkan pengguna ke halaman login",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:117"
+              "location": "tests\\step-definitions\\authentication.steps.ts:117"
             },
             "result": {
               "status": "passed",
-              "duration": 565077390
+              "duration": 82140800
             }
           },
           {
@@ -245,7 +245,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 55114166
+              "duration": 5955200
             }
           }
         ],
@@ -264,7 +264,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 314028321
+              "duration": 56466400
             }
           },
           {
@@ -273,11 +273,11 @@
             "line": 26,
             "name": "pengguna telah login",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:16"
+              "location": "tests\\step-definitions\\authentication.steps.ts:16"
             },
             "result": {
               "status": "passed",
-              "duration": 3284206535
+              "duration": 559910199
             }
           },
           {
@@ -286,11 +286,11 @@
             "line": 27,
             "name": "pengguna melakukan logout",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:129"
+              "location": "tests\\step-definitions\\authentication.steps.ts:129"
             },
             "result": {
               "status": "passed",
-              "duration": 3823915262
+              "duration": 748017399
             }
           },
           {
@@ -299,11 +299,11 @@
             "line": 28,
             "name": "session pengguna berakhir",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:143"
+              "location": "tests\\step-definitions\\authentication.steps.ts:143"
             },
             "result": {
               "status": "passed",
-              "duration": 710031810
+              "duration": 153520899
             }
           },
           {
@@ -312,11 +312,11 @@
             "line": 29,
             "name": "pengguna kembali ke halaman login",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:156"
+              "location": "tests\\step-definitions\\authentication.steps.ts:156"
             },
             "result": {
               "status": "passed",
-              "duration": 115182668
+              "duration": 14195700
             }
           },
           {
@@ -324,7 +324,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 53681399
+              "duration": 5655300
             }
           }
         ],
@@ -337,7 +337,7 @@
     "keyword": "Feature",
     "name": "Authentication SIMAG",
     "tags": [],
-    "uri": "tests/features/authentication.feature"
+    "uri": "tests\\features\\authentication.feature"
   },
   {
     "description": "  Sebagai mahasiswa peserta magang BMKG\n  Saya ingin melihat ringkasan aktivitas dan progres magang di halaman dashboard\n  Agar saya dapat memantau kehadiran, laporan harian, dan modul praktikum secara cepat",
@@ -354,7 +354,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 431423758
+              "duration": 55724900
             }
           },
           {
@@ -363,11 +363,11 @@
             "line": 7,
             "name": "pengguna telah login",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:16"
+              "location": "tests\\step-definitions\\authentication.steps.ts:16"
             },
             "result": {
               "status": "passed",
-              "duration": 3442311013
+              "duration": 519579500
             }
           },
           {
@@ -376,11 +376,11 @@
             "line": 8,
             "name": "pengguna berada di halaman dashboard",
             "match": {
-              "location": "tests/step-definitions/dashboard.steps.ts:6"
+              "location": "tests\\step-definitions\\dashboard.steps.ts:6"
             },
             "result": {
               "status": "passed",
-              "duration": 124557807
+              "duration": 4211500
             }
           },
           {
@@ -389,11 +389,11 @@
             "line": 9,
             "name": "pengguna melihat kartu statistik \"Kehadiran Bulan Ini\"",
             "match": {
-              "location": "tests/step-definitions/dashboard.steps.ts:16"
+              "location": "tests\\step-definitions\\dashboard.steps.ts:16"
             },
             "result": {
               "status": "passed",
-              "duration": 259152385
+              "duration": 18839100
             }
           },
           {
@@ -402,11 +402,11 @@
             "line": 10,
             "name": "pengguna melihat kartu statistik \"Laporan Terkirim\"",
             "match": {
-              "location": "tests/step-definitions/dashboard.steps.ts:16"
+              "location": "tests\\step-definitions\\dashboard.steps.ts:16"
             },
             "result": {
               "status": "passed",
-              "duration": 173236834
+              "duration": 14998199
             }
           },
           {
@@ -415,11 +415,11 @@
             "line": 11,
             "name": "pengguna melihat kartu statistik \"Modul Dibuat\"",
             "match": {
-              "location": "tests/step-definitions/dashboard.steps.ts:16"
+              "location": "tests\\step-definitions\\dashboard.steps.ts:16"
             },
             "result": {
               "status": "passed",
-              "duration": 177739740
+              "duration": 48441200
             }
           },
           {
@@ -428,11 +428,11 @@
             "line": 12,
             "name": "pengguna melihat kartu statistik \"Status Hari Ini\"",
             "match": {
-              "location": "tests/step-definitions/dashboard.steps.ts:16"
+              "location": "tests\\step-definitions\\dashboard.steps.ts:16"
             },
             "result": {
               "status": "passed",
-              "duration": 210664648
+              "duration": 11566499
             }
           },
           {
@@ -440,7 +440,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 94231969
+              "duration": 5977399
             }
           }
         ],
@@ -459,7 +459,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 474828264
+              "duration": 46094200
             }
           },
           {
@@ -468,11 +468,11 @@
             "line": 15,
             "name": "pengguna telah login",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:16"
+              "location": "tests\\step-definitions\\authentication.steps.ts:16"
             },
             "result": {
               "status": "passed",
-              "duration": 4155115422
+              "duration": 503497999
             }
           },
           {
@@ -481,11 +481,11 @@
             "line": 16,
             "name": "pengguna berada di halaman dashboard",
             "match": {
-              "location": "tests/step-definitions/dashboard.steps.ts:6"
+              "location": "tests\\step-definitions\\dashboard.steps.ts:6"
             },
             "result": {
               "status": "passed",
-              "duration": 144172785
+              "duration": 7671800
             }
           },
           {
@@ -494,11 +494,11 @@
             "line": 17,
             "name": "sistem menampilkan sapaan \"Selamat datang,\" beserta nama pengguna",
             "match": {
-              "location": "tests/step-definitions/dashboard.steps.ts:22"
+              "location": "tests\\step-definitions\\dashboard.steps.ts:22"
             },
             "result": {
               "status": "passed",
-              "duration": 515107873
+              "duration": 24291299
             }
           },
           {
@@ -507,11 +507,11 @@
             "line": 18,
             "name": "sistem menampilkan indikator \"Progres Magang\" beserta tautan \"Lihat profil\"",
             "match": {
-              "location": "tests/step-definitions/dashboard.steps.ts:32"
+              "location": "tests\\step-definitions\\dashboard.steps.ts:32"
             },
             "result": {
               "status": "passed",
-              "duration": 296789052
+              "duration": 45956799
             }
           },
           {
@@ -519,7 +519,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 92159738
+              "duration": 4793799
             }
           }
         ],
@@ -538,7 +538,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 355165804
+              "duration": 45969100
             }
           },
           {
@@ -547,11 +547,11 @@
             "line": 21,
             "name": "pengguna telah login",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:16"
+              "location": "tests\\step-definitions\\authentication.steps.ts:16"
             },
             "result": {
               "status": "passed",
-              "duration": 3166519121
+              "duration": 511573499
             }
           },
           {
@@ -560,11 +560,11 @@
             "line": 22,
             "name": "pengguna menekan kartu statistik \"Laporan Terkirim\" di dashboard",
             "match": {
-              "location": "tests/step-definitions/dashboard.steps.ts:46"
+              "location": "tests\\step-definitions\\dashboard.steps.ts:46"
             },
             "result": {
               "status": "passed",
-              "duration": 530591121
+              "duration": 79050799
             }
           },
           {
@@ -573,11 +573,11 @@
             "line": 23,
             "name": "pengguna diarahkan ke halaman \"/laporan-harian\"",
             "match": {
-              "location": "tests/step-definitions/dashboard.steps.ts:55"
+              "location": "tests\\step-definitions\\dashboard.steps.ts:55"
             },
             "result": {
               "status": "passed",
-              "duration": 1078304953
+              "duration": 42041900
             }
           },
           {
@@ -586,11 +586,11 @@
             "line": 24,
             "name": "judul halaman menampilkan \"Laporan Harian\"",
             "match": {
-              "location": "tests/step-definitions/dashboard.steps.ts:63"
+              "location": "tests\\step-definitions\\dashboard.steps.ts:63"
             },
             "result": {
               "status": "passed",
-              "duration": 178936848
+              "duration": 16498199
             }
           },
           {
@@ -598,7 +598,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 67665182
+              "duration": 5487199
             }
           }
         ],
@@ -611,7 +611,516 @@
     "keyword": "Feature",
     "name": "Dashboard SIMAG BMKG",
     "tags": [],
-    "uri": "tests/features/dashboard.feature"
+    "uri": "tests\\features\\dashboard.feature"
+  },
+  {
+    "description": "  Sebagai mahasiswa peserta magang BMKG\n  Saya ingin mengakses modul praktikum dan agenda kalender kegiatan\n  Agar materi pembelajaran dan agenda kegiatan bimbingan magang dapat diakses dengan mudah",
+    "elements": [
+      {
+        "description": "",
+        "id": "modul-praktikum-dan-kalender-kegiatan-simag-bmkg;mahasiswa-membuka-daftar-modul-praktikum-dan-melihat-tombol-buat-modul",
+        "keyword": "Scenario",
+        "line": 6,
+        "name": "Mahasiswa membuka daftar modul praktikum dan melihat tombol buat modul",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 42931399
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "pengguna telah login",
+            "match": {
+              "location": "tests\\step-definitions\\authentication.steps.ts:16"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 509255599
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 8,
+            "name": "pengguna membuka halaman \"/modul-praktikum\"",
+            "match": {
+              "location": "tests\\step-definitions\\simag_features.steps.ts:5"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 75000699
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 9,
+            "name": "judul atau breadcrumb modul menampilkan \"Modul Praktikum\"",
+            "match": {
+              "location": "tests\\step-definitions\\modul_kalender.steps.ts:5"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 23748499
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 10,
+            "name": "sistem menampilkan tombol \"Buat Modul\"",
+            "match": {
+              "location": "tests\\step-definitions\\modul_kalender.steps.ts:14"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 8061400
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 6801800
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "modul-praktikum-dan-kalender-kegiatan-simag-bmkg;mahasiswa-mengakses-formulir-pembuatan-modul-praktikum-baru",
+        "keyword": "Scenario",
+        "line": 12,
+        "name": "Mahasiswa mengakses formulir pembuatan modul praktikum baru",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 48363199
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 13,
+            "name": "pengguna telah login",
+            "match": {
+              "location": "tests\\step-definitions\\authentication.steps.ts:16"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 524721800
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 14,
+            "name": "pengguna membuka halaman \"/modul-praktikum/baru\"",
+            "match": {
+              "location": "tests\\step-definitions\\simag_features.steps.ts:5"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 83743200
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 15,
+            "name": "sistem menampilkan input judul modul",
+            "match": {
+              "location": "tests\\step-definitions\\modul_kalender.steps.ts:23"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 16937700
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 16,
+            "name": "sistem menampilkan pilihan kategori modul",
+            "match": {
+              "location": "tests\\step-definitions\\modul_kalender.steps.ts:29"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 9374900
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 17,
+            "name": "sistem menampilkan textarea konten modul",
+            "match": {
+              "location": "tests\\step-definitions\\modul_kalender.steps.ts:35"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 4446400
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 6378899
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "modul-praktikum-dan-kalender-kegiatan-simag-bmkg;mahasiswa-membuka-kalender-kegiatan-magang",
+        "keyword": "Scenario",
+        "line": 19,
+        "name": "Mahasiswa membuka kalender kegiatan magang",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 54111000
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 20,
+            "name": "pengguna telah login",
+            "match": {
+              "location": "tests\\step-definitions\\authentication.steps.ts:16"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 508825999
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 21,
+            "name": "pengguna membuka halaman \"/kalender\"",
+            "match": {
+              "location": "tests\\step-definitions\\simag_features.steps.ts:5"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 74658199
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 22,
+            "name": "sistem menampilkan header kalender dengan navigasi bulan",
+            "match": {
+              "location": "tests\\step-definitions\\modul_kalender.steps.ts:41"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 37029099
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 23,
+            "name": "sistem menampilkan tombol \"Tambah Agenda\"",
+            "match": {
+              "location": "tests\\step-definitions\\modul_kalender.steps.ts:14"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 7722399
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 5309900
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      }
+    ],
+    "id": "modul-praktikum-dan-kalender-kegiatan-simag-bmkg",
+    "line": 1,
+    "keyword": "Feature",
+    "name": "Modul Praktikum dan Kalender Kegiatan SIMAG BMKG",
+    "tags": [],
+    "uri": "tests\\features\\modul_kalender.feature"
+  },
+  {
+    "description": "  Sebagai peserta magang atau pengguna SIMAG BMKG\n  Saya ingin mengakses profil akun dan halaman pengaturan\n  Agar dapat memverifikasi informasi identitas peserta magang dan konfigurasi sistem",
+    "elements": [
+      {
+        "description": "",
+        "id": "profil-pengguna-dan-pengaturan-sistem-simag-bmkg;mahasiswa-melihat-informasi-profil-peserta-magang",
+        "keyword": "Scenario",
+        "line": 6,
+        "name": "Mahasiswa melihat informasi profil peserta magang",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 46330900
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "pengguna telah login",
+            "match": {
+              "location": "tests\\step-definitions\\authentication.steps.ts:16"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 499140699
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 8,
+            "name": "pengguna membuka halaman \"/profil\"",
+            "match": {
+              "location": "tests\\step-definitions\\simag_features.steps.ts:5"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 70373299
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 9,
+            "name": "sistem menampilkan judul \"Profil Saya\"",
+            "match": {
+              "location": "tests\\step-definitions\\profil_pengaturan.steps.ts:6"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 103204999
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 10,
+            "name": "formulir profil menampilkan nama pengguna yang sesuai",
+            "match": {
+              "location": "tests\\step-definitions\\profil_pengaturan.steps.ts:15"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 8760599
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 11,
+            "name": "formulir profil menampilkan email pengguna yang sesuai",
+            "match": {
+              "location": "tests\\step-definitions\\profil_pengaturan.steps.ts:21"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 5230800
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 5199900
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "profil-pengguna-dan-pengaturan-sistem-simag-bmkg;mahasiswa-melihat-tombol-ubah-profil-dan-ubah-kata-sandi",
+        "keyword": "Scenario",
+        "line": 13,
+        "name": "Mahasiswa melihat tombol ubah profil dan ubah kata sandi",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 44419499
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 14,
+            "name": "pengguna telah login",
+            "match": {
+              "location": "tests\\step-definitions\\authentication.steps.ts:16"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 516182100
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 15,
+            "name": "pengguna membuka halaman \"/profil\"",
+            "match": {
+              "location": "tests\\step-definitions\\simag_features.steps.ts:5"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 58786500
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 16,
+            "name": "sistem menampilkan tombol \"Edit Profil\"",
+            "match": {
+              "location": "tests\\step-definitions\\modul_kalender.steps.ts:14"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 57443400
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 17,
+            "name": "sistem menampilkan tombol \"Ganti Password\"",
+            "match": {
+              "location": "tests\\step-definitions\\modul_kalender.steps.ts:14"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 7856700
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 5541900
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "profil-pengguna-dan-pengaturan-sistem-simag-bmkg;mahasiswa-membuka-halaman-pengaturan-instansi",
+        "keyword": "Scenario",
+        "line": 19,
+        "name": "Mahasiswa membuka halaman pengaturan instansi",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 50587099
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 20,
+            "name": "pengguna telah login",
+            "match": {
+              "location": "tests\\step-definitions\\authentication.steps.ts:16"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 498622999
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 21,
+            "name": "pengguna membuka halaman \"/pengaturan\"",
+            "match": {
+              "location": "tests\\step-definitions\\simag_features.steps.ts:5"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 83652100
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 22,
+            "name": "halaman pengaturan menampilkan informasi instansi",
+            "match": {
+              "location": "tests\\step-definitions\\profil_pengaturan.steps.ts:27"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 103173099
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 5898500
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      }
+    ],
+    "id": "profil-pengguna-dan-pengaturan-sistem-simag-bmkg",
+    "line": 1,
+    "keyword": "Feature",
+    "name": "Profil Pengguna dan Pengaturan Sistem SIMAG BMKG",
+    "tags": [],
+    "uri": "tests\\features\\profil_pengaturan.feature"
   },
   {
     "description": "  Sebagai mahasiswa peserta magang BMKG\n  Saya ingin menggunakan fitur Laporan Harian, Riwayat Absensi, dan Kalender Kegiatan\n  Agar seluruh aktivitas magang saya tercatat dan terpantau dengan baik",
@@ -628,7 +1137,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 501077730
+              "duration": 44428599
             }
           },
           {
@@ -637,11 +1146,11 @@
             "line": 7,
             "name": "pengguna telah login",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:16"
+              "location": "tests\\step-definitions\\authentication.steps.ts:16"
             },
             "result": {
               "status": "passed",
-              "duration": 4440081028
+              "duration": 513790399
             }
           },
           {
@@ -650,11 +1159,11 @@
             "line": 8,
             "name": "pengguna membuka halaman \"/laporan-harian/baru\"",
             "match": {
-              "location": "tests/step-definitions/simag_features.steps.ts:5"
+              "location": "tests\\step-definitions\\simag_features.steps.ts:5"
             },
             "result": {
               "status": "passed",
-              "duration": 1210930399
+              "duration": 67506100
             }
           },
           {
@@ -663,11 +1172,11 @@
             "line": 9,
             "name": "pengguna mengisi judul laporan \"Observasi Sinoptik Stasiun Meteorologi\"",
             "match": {
-              "location": "tests/step-definitions/simag_features.steps.ts:9"
+              "location": "tests\\step-definitions\\simag_features.steps.ts:9"
             },
             "result": {
               "status": "passed",
-              "duration": 706656864
+              "duration": 63957800
             }
           },
           {
@@ -676,11 +1185,11 @@
             "line": 10,
             "name": "pengguna mengisi deskripsi kegiatan \"Melakukan pengamatan suhu udara, kelembaban, tekanan udara, dan curah hujan harian pada taman alat meteorologi.\"",
             "match": {
-              "location": "tests/step-definitions/simag_features.steps.ts:19"
+              "location": "tests\\step-definitions\\simag_features.steps.ts:19"
             },
             "result": {
               "status": "passed",
-              "duration": 405097246
+              "duration": 47065700
             }
           },
           {
@@ -689,11 +1198,11 @@
             "line": 11,
             "name": "pengguna mengisi kendala laporan \"Tidak ada kendala teknis pada instrumen pengamatan.\"",
             "match": {
-              "location": "tests/step-definitions/simag_features.steps.ts:29"
+              "location": "tests\\step-definitions\\simag_features.steps.ts:29"
             },
             "result": {
               "status": "passed",
-              "duration": 251742767
+              "duration": 48061400
             }
           },
           {
@@ -702,11 +1211,11 @@
             "line": 12,
             "name": "pengguna menekan tombol \"Simpan Draft\"",
             "match": {
-              "location": "tests/step-definitions/simag_features.steps.ts:36"
+              "location": "tests\\step-definitions\\simag_features.steps.ts:36"
             },
             "result": {
               "status": "passed",
-              "duration": 157769780
+              "duration": 47292400
             }
           },
           {
@@ -715,11 +1224,11 @@
             "line": 13,
             "name": "pengguna diarahkan kembali ke halaman \"/laporan-harian\"",
             "match": {
-              "location": "tests/step-definitions/simag_features.steps.ts:42"
+              "location": "tests\\step-definitions\\simag_features.steps.ts:42"
             },
             "result": {
               "status": "passed",
-              "duration": 393623581
+              "duration": 35486100
             }
           },
           {
@@ -728,11 +1237,11 @@
             "line": 14,
             "name": "daftar laporan menampilkan judul \"Observasi Sinoptik Stasiun Meteorologi\" dengan status \"Draft\"",
             "match": {
-              "location": "tests/step-definitions/simag_features.steps.ts:53"
+              "location": "tests\\step-definitions\\simag_features.steps.ts:53"
             },
             "result": {
               "status": "passed",
-              "duration": 422842499
+              "duration": 48879800
             }
           },
           {
@@ -740,7 +1249,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 119613971
+              "duration": 5290100
             }
           }
         ],
@@ -759,7 +1268,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 717214998
+              "duration": 44745399
             }
           },
           {
@@ -768,11 +1277,11 @@
             "line": 17,
             "name": "pengguna telah login",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:16"
+              "location": "tests\\step-definitions\\authentication.steps.ts:16"
             },
             "result": {
               "status": "passed",
-              "duration": 3581738523
+              "duration": 522558299
             }
           },
           {
@@ -781,11 +1290,11 @@
             "line": 18,
             "name": "terdapat laporan harian \"Observasi Sinoptik Stasiun Meteorologi\" pada sistem",
             "match": {
-              "location": "tests/step-definitions/simag_features.steps.ts:70"
+              "location": "tests\\step-definitions\\simag_features.steps.ts:70"
             },
             "result": {
               "status": "passed",
-              "duration": 2759103723
+              "duration": 308728199
             }
           },
           {
@@ -794,11 +1303,11 @@
             "line": 19,
             "name": "pengguna membuka halaman \"/laporan-harian\"",
             "match": {
-              "location": "tests/step-definitions/simag_features.steps.ts:5"
+              "location": "tests\\step-definitions\\simag_features.steps.ts:5"
             },
             "result": {
               "status": "passed",
-              "duration": 710263659
+              "duration": 56594600
             }
           },
           {
@@ -807,11 +1316,11 @@
             "line": 20,
             "name": "pengguna mengetik \"Observasi Sinoptik\" pada kolom pencarian laporan",
             "match": {
-              "location": "tests/step-definitions/simag_features.steps.ts:87"
+              "location": "tests\\step-definitions\\simag_features.steps.ts:87"
             },
             "result": {
               "status": "passed",
-              "duration": 397432369
+              "duration": 26784100
             }
           },
           {
@@ -820,11 +1329,11 @@
             "line": 21,
             "name": "daftar laporan tetap menampilkan \"Observasi Sinoptik Stasiun Meteorologi\"",
             "match": {
-              "location": "tests/step-definitions/simag_features.steps.ts:96"
+              "location": "tests\\step-definitions\\simag_features.steps.ts:96"
             },
             "result": {
               "status": "passed",
-              "duration": 405447668
+              "duration": 36332600
             }
           },
           {
@@ -832,7 +1341,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 38639302
+              "duration": 5219300
             }
           }
         ],
@@ -851,7 +1360,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 401455623
+              "duration": 50799899
             }
           },
           {
@@ -860,11 +1369,11 @@
             "line": 24,
             "name": "pengguna telah login",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:16"
+              "location": "tests\\step-definitions\\authentication.steps.ts:16"
             },
             "result": {
               "status": "passed",
-              "duration": 3497874402
+              "duration": 591054200
             }
           },
           {
@@ -873,11 +1382,11 @@
             "line": 25,
             "name": "pengguna membuka halaman \"/riwayat/absensi\"",
             "match": {
-              "location": "tests/step-definitions/simag_features.steps.ts:5"
+              "location": "tests\\step-definitions\\simag_features.steps.ts:5"
             },
             "result": {
               "status": "passed",
-              "duration": 1845856813
+              "duration": 55143999
             }
           },
           {
@@ -886,11 +1395,11 @@
             "line": 26,
             "name": "judul halaman menampilkan \"Riwayat Kehadiran\"",
             "match": {
-              "location": "tests/step-definitions/dashboard.steps.ts:63"
+              "location": "tests\\step-definitions\\dashboard.steps.ts:63"
             },
             "result": {
               "status": "passed",
-              "duration": 227787377
+              "duration": 33868600
             }
           },
           {
@@ -899,11 +1408,11 @@
             "line": 27,
             "name": "tabel riwayat absensi menampilkan kolom \"Tanggal\", \"Jam Masuk\", \"Jam Pulang\", \"Keterangan\", dan \"Status\"",
             "match": {
-              "location": "tests/step-definitions/simag_features.steps.ts:105"
+              "location": "tests\\step-definitions\\simag_features.steps.ts:105"
             },
             "result": {
               "status": "passed",
-              "duration": 164588592
+              "duration": 53693699
             }
           },
           {
@@ -911,7 +1420,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 81237538
+              "duration": 4256900
             }
           }
         ],
@@ -930,7 +1439,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 386669689
+              "duration": 45734599
             }
           },
           {
@@ -939,11 +1448,11 @@
             "line": 30,
             "name": "pengguna telah login",
             "match": {
-              "location": "tests/step-definitions/authentication.steps.ts:16"
+              "location": "tests\\step-definitions\\authentication.steps.ts:16"
             },
             "result": {
               "status": "passed",
-              "duration": 3350973139
+              "duration": 512853100
             }
           },
           {
@@ -952,11 +1461,11 @@
             "line": 31,
             "name": "pengguna membuka halaman \"/absensi\"",
             "match": {
-              "location": "tests/step-definitions/simag_features.steps.ts:5"
+              "location": "tests\\step-definitions\\simag_features.steps.ts:5"
             },
             "result": {
               "status": "passed",
-              "duration": 1217581808
+              "duration": 52452699
             }
           },
           {
@@ -965,11 +1474,11 @@
             "line": 32,
             "name": "judul halaman menampilkan \"Absensi Harian\"",
             "match": {
-              "location": "tests/step-definitions/dashboard.steps.ts:63"
+              "location": "tests\\step-definitions\\dashboard.steps.ts:63"
             },
             "result": {
               "status": "passed",
-              "duration": 209640650
+              "duration": 39664199
             }
           },
           {
@@ -978,11 +1487,11 @@
             "line": 33,
             "name": "sistem menampilkan bagian \"Status Hari Ini\"",
             "match": {
-              "location": "tests/step-definitions/simag_features.steps.ts:123"
+              "location": "tests\\step-definitions\\simag_features.steps.ts:123"
             },
             "result": {
               "status": "passed",
-              "duration": 123545125
+              "duration": 7943899
             }
           },
           {
@@ -990,7 +1499,7 @@
             "hidden": true,
             "result": {
               "status": "passed",
-              "duration": 111428142
+              "duration": 4208899
             }
           }
         ],
@@ -1003,6 +1512,6 @@
     "keyword": "Feature",
     "name": "Fitur Utama SIMAG BMKG",
     "tags": [],
-    "uri": "tests/features/simag_features.feature"
+    "uri": "tests\\features\\simag_features.feature"
   }
 ]
