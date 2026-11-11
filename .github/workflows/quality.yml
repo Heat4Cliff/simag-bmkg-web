@@ -44,5 +44,5 @@ jobs:
       - run: npm run test:coverage:lcov
       - run: npm run test:coverage:verify
       - name: Scan and wait for SonarQube Quality Gate
-        if: ${{ secrets.SONAR_HOST_URL != '' && secrets.SONAR_TOKEN != '' }}
+        if: ${{ env.SONAR_HOST_URL != '' && env.SONAR_TOKEN != '' }}
         run: npm run sonar:scan
