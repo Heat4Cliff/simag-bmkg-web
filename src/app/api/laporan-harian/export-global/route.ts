@@ -131,12 +131,12 @@ export async function GET(request: Request) {
     // Tabel Informasi Mahasiswa & Tempat Magang
     const infoRows = [
       ["Nama Mahasiswa", `: ${targetUser.nama}`],
-      ["NIM", `: ${profile?.nim || "-"}`],
-      ["Program Studi", `: ${profile?.programStudi || "-"}`],
-      ["Tempat / Instansi Magang", `: ${tempatMagang?.namaInstansi || "Kantor BMKG"}`],
-      ["Alamat Instansi", `: ${tempatMagang?.alamat || "-"}`],
-      ["Dosen Pembimbing Lapangan", `: ${dpl?.user?.nama || "-"} ${dpl?.nip ? `(NIP. ${dpl.nip})` : ""}`],
-      ["Pembimbing / Mentor Instansi", `: ${mentor?.user?.nama || "-"} ${mentor?.jabatan ? `(${mentor.jabatan})` : ""}`],
+      ["NIM", `: ${profile?.nim ?? "-"}`],
+      ["Program Studi", `: ${profile?.programStudi ?? "-"}`],
+      ["Tempat / Instansi Magang", `: ${tempatMagang?.namaInstansi ?? "Kantor BMKG"}`],
+      ["Alamat Instansi", `: ${tempatMagang?.alamat ?? "-"}`],
+      ["Dosen Pembimbing Lapangan", `: ${dpl?.user?.nama ?? "-"} ${dpl?.nip ? `(NIP. ${dpl.nip})` : ""}`],
+      ["Pembimbing / Mentor Instansi", `: ${mentor?.user?.nama ?? "-"} ${mentor?.jabatan ? `(${mentor.jabatan})` : ""}`],
       ["Periode Magang", `: ${periodeStr}`],
       ["Total Logbook Tercatat", `: ${laporanList.length} Hari Kegiatan`],
     ].map(
@@ -499,7 +499,7 @@ export async function GET(request: Request) {
 
     const buffer = await Packer.toBuffer(doc);
     const sanitizedNama = targetUser.nama.replace(/[^a-zA-Z0-9]/g, "_");
-    const sanitizedNim = (profile?.nim || "mhs").replace(/[^a-zA-Z0-9]/g, "_");
+    const sanitizedNim = (profile?.nim ?? "mhs").replace(/[^a-zA-Z0-9]/g, "_");
     const filename = `Logbook_Magang_${sanitizedNama}_${sanitizedNim}.docx`;
 
     return new NextResponse(buffer as any, {

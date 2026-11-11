@@ -60,7 +60,7 @@ export async function GET() {
     mahasiswa: mahasiswa.map(m => ({
       id: m.userId,
       nama: m.user.nama,
-      institusi: m.tempatMagang?.namaInstansi || "-",
+      institusi: m.tempatMagang?.namaInstansi ?? "-",
       periodeSelesai: m.periodeSelesai,
       lastAbsen: (m.user as any)?.absensi?.[0] || null,
       pendingLaporan: (m.user as any)?.laporanHarian?.length || 0,

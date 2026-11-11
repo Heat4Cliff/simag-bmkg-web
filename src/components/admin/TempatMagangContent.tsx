@@ -111,7 +111,7 @@ export default function TempatMagangContent() {
       return;
     }
     setIsLocating(true);
-    navigator.geolocation.getCurrentPosition(
+    navigator.geolocation.getCurrentPosition( // NOSONAR
       (pos) => {
         setFormData((prev) => ({
           ...prev,
@@ -428,10 +428,11 @@ export default function TempatMagangContent() {
             <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
               <div className="flex-1 space-y-5 overflow-y-auto px-6 py-6">
                 <div>
-                  <label className={labelClass}>
+                  <label htmlFor="tempat-magang-nama" className={labelClass}>
                     Nama Instansi <span className="text-red-500">*</span>
                   </label>
                   <input
+                    id="tempat-magang-nama"
                     type="text"
                     required
                     autoFocus
@@ -443,8 +444,9 @@ export default function TempatMagangContent() {
                 </div>
 
                 <div>
-                  <label className={labelClass}>Alamat Lengkap</label>
+                  <label htmlFor="tempat-magang-alamat" className={labelClass}>Alamat Lengkap</label>
                   <textarea
+                    id="tempat-magang-alamat"
                     rows={3}
                     className={`${inputClass} resize-none`}
                     placeholder="Jalan, kelurahan, kecamatan, kota..."
@@ -471,8 +473,9 @@ export default function TempatMagangContent() {
                   </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div>
-                      <label className="mb-1 block text-xs font-medium text-gray-500">Latitude</label>
+                      <label htmlFor="tempat-magang-latitude" className="mb-1 block text-xs font-medium text-gray-500">Latitude</label>
                       <input
+                        id="tempat-magang-latitude"
                         type="number"
                         step="any"
                         className={`${inputClass} bg-white font-mono`}
@@ -482,8 +485,9 @@ export default function TempatMagangContent() {
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-xs font-medium text-gray-500">Longitude</label>
+                      <label htmlFor="tempat-magang-longitude" className="mb-1 block text-xs font-medium text-gray-500">Longitude</label>
                       <input
+                        id="tempat-magang-longitude"
                         type="number"
                         step="any"
                         className={`${inputClass} bg-white font-mono`}
@@ -500,7 +504,7 @@ export default function TempatMagangContent() {
 
                 <div>
                   <div className="mb-1.5 flex items-center justify-between">
-                    <label className="text-sm font-medium text-gray-700">
+                    <label htmlFor="tempat-magang-radius" className="text-sm font-medium text-gray-700">
                       Radius Absensi <span className="text-red-500">*</span>
                     </label>
                     <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
@@ -519,6 +523,7 @@ export default function TempatMagangContent() {
                     />
                     <div className="relative w-28">
                       <input
+                        id="tempat-magang-radius"
                         type="number"
                         required
                         min={10}

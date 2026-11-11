@@ -118,8 +118,9 @@ export default function EditModulPage({ params }: { params: Promise<{ id: string
 
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-5">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">Judul Modul *</label>
+          <label htmlFor="edit-modul-judul" className="block text-sm font-semibold text-gray-700 mb-1.5">Judul Modul *</label>
           <input
+            id="edit-modul-judul"
             type="text"
             value={form.judul}
             onChange={(e) => setForm({ ...form, judul: e.target.value })}
@@ -129,8 +130,9 @@ export default function EditModulPage({ params }: { params: Promise<{ id: string
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">Kategori Modul *</label>
+          <label htmlFor="edit-modul-kategori" className="block text-sm font-semibold text-gray-700 mb-1.5">Kategori Modul *</label>
           <select
+            id="edit-modul-kategori"
             value={form.kategoriId}
             onChange={(e) => setForm({ ...form, kategoriId: e.target.value })}
             className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1E8A3C]/30 focus:border-[#1E8A3C] bg-white"
@@ -145,11 +147,11 @@ export default function EditModulPage({ params }: { params: Promise<{ id: string
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-            Konten Modul *
-            <span className="text-xs text-gray-400 font-normal ml-2">(Materi praktikum lengkap)</span>
+          <label htmlFor="edit-modul-konten" className="block text-sm font-semibold text-gray-700 mb-1.5">
+            Konten Modul * <span className="text-xs text-gray-400 font-normal ml-2">(Materi praktikum lengkap)</span>
           </label>
           <textarea
+            id="edit-modul-konten"
             value={form.konten}
             onChange={(e) => setForm({ ...form, konten: e.target.value })}
             rows={10}
@@ -159,11 +161,11 @@ export default function EditModulPage({ params }: { params: Promise<{ id: string
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-            Lampiran File (Opsional)
-            <span className="text-xs text-gray-400 font-normal ml-2">(Biarkan kosong jika tidak ingin mengubah file)</span>
+          <label htmlFor="edit-modul-lampiran" className="block text-sm font-semibold text-gray-700 mb-1.5">
+            Lampiran File (Opsional) <span className="text-xs text-gray-400 font-normal ml-2">(Biarkan kosong jika tidak ingin mengubah file)</span>
           </label>
           <input
+            id="edit-modul-lampiran"
             type="file"
             accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
             onChange={(e) => {

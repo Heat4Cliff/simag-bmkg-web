@@ -41,8 +41,8 @@ export async function GET(request: Request) {
       userId: m.userId,
       nama: m.user.nama,
       nim: m.nim,
-      universitas: m.programStudi || '-',
-      tempatMagang: m.tempatMagang?.namaInstansi || 'Belum ditempatkan',
+      universitas: m.programStudi ?? '-',
+      tempatMagang: m.tempatMagang?.namaInstansi ?? 'Belum ditempatkan',
       status: !m.tempatMagangId
         ? 'BELUM'
         : m.periodeSelesai && m.periodeSelesai < now

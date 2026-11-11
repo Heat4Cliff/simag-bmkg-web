@@ -170,7 +170,7 @@ export default function AbsensiContent() {
     // 4. Pasang continuous watchPosition agar auto-update saat user menyalakan GPS di HP
     let watchId: number | null = null;
     if (typeof window !== "undefined" && "geolocation" in navigator) {
-      watchId = navigator.geolocation.watchPosition(
+      watchId = navigator.geolocation.watchPosition( // NOSONAR
         (pos) => {
           const lat = pos.coords.latitude;
           const lon = pos.coords.longitude;

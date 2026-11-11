@@ -227,8 +227,9 @@ export default function ProfilContent() {
       {isEditing ? (
         <form onSubmit={handleSave} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden p-6 space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nama Lengkap</label>
+            <label htmlFor="profil-nama" className="block text-sm font-semibold text-gray-700 mb-1.5">Nama Lengkap</label>
             <input 
+              id="profil-nama"
               type="text" 
               required
               value={formData.nama}
@@ -237,8 +238,9 @@ export default function ProfilContent() {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Alamat Email</label>
+            <label htmlFor="profil-email" className="block text-sm font-semibold text-gray-700 mb-1.5">Alamat Email</label>
             <input 
+              id="profil-email"
               type="email" 
               required
               value={formData.email}
@@ -247,8 +249,9 @@ export default function ProfilContent() {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Username</label>
+            <label htmlFor="profil-username" className="block text-sm font-semibold text-gray-700 mb-1.5">Username</label>
             <input 
+              id="profil-username"
               type="text" 
               value={formData.username}
               onChange={e => setFormData({...formData, username: e.target.value})}
@@ -257,8 +260,9 @@ export default function ProfilContent() {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nomor HP</label>
+            <label htmlFor="profil-nohp" className="block text-sm font-semibold text-gray-700 mb-1.5">Nomor HP</label>
             <input 
+              id="profil-nohp"
               type="text" 
               value={formData.noHp}
               onChange={e => setFormData({...formData, noHp: e.target.value})}
@@ -328,9 +332,10 @@ export default function ProfilContent() {
         {isChangingPassword && (
           <form onSubmit={handlePasswordSave} className="p-5 space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Password Lama</label>
+              <label htmlFor="profil-old-password" className="block text-sm font-semibold text-gray-700 mb-1.5">Password Lama</label>
               <div className="relative">
                 <input 
+                  id="profil-old-password"
                   type={showOldPassword ? "text" : "password"} 
                   required
                   value={passwordData.oldPassword}
@@ -347,9 +352,10 @@ export default function ProfilContent() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Password Baru</label>
+              <label htmlFor="profil-new-password" className="block text-sm font-semibold text-gray-700 mb-1.5">Password Baru</label>
               <div className="relative">
                 <input 
+                  id="profil-new-password"
                   type={showNewPassword ? "text" : "password"} 
                   required
                   value={passwordData.newPassword}
@@ -366,9 +372,10 @@ export default function ProfilContent() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Konfirmasi Password Baru</label>
+              <label htmlFor="profil-confirm-password" className="block text-sm font-semibold text-gray-700 mb-1.5">Konfirmasi Password Baru</label>
               <div className="relative">
                 <input 
+                  id="profil-confirm-password"
                   type={showConfirmPassword ? "text" : "password"} 
                   required
                   value={passwordData.confirmPassword}

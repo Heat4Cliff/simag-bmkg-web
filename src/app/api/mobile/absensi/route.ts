@@ -99,9 +99,9 @@ export async function POST(request: Request) {
     if (tempatMagangId) {
       const tempat = await prisma.tempatMagang.findUnique({ where: { id: tempatMagangId } });
       if (tempat) {
-        targetLat = tempat.latitudeKantor || 0;
-        targetLng = tempat.longitudeKantor || 0;
-        radius = tempat.radiusAbsensiMeter || 500;
+        targetLat = tempat.latitudeKantor ?? 0;
+        targetLng = tempat.longitudeKantor ?? 0;
+        radius = tempat.radiusAbsensiMeter ?? 500;
       }
     } else {
       return buildCorsResponse({ success: false, message: "Anda belum ditempatkan di tempat magang manapun, absensi diblokir." }, 403);

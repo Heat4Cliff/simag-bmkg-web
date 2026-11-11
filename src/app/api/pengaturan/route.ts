@@ -24,8 +24,8 @@ export async function GET() {
   return NextResponse.json({
     setting: {
       namaInstansi: setting.namaKampus,
-      alamat: setting.alamat || "",
-      kontak: setting.kontak || "",
+      alamat: setting.alamat ?? "",
+      kontak: setting.kontak ?? "",
       latitudeKantor: defaultTempat?.latitudeKantor ?? -7.7123,
       longitudeKantor: defaultTempat?.longitudeKantor ?? 109.0123,
       radiusAbsensiMeter: defaultTempat?.radiusAbsensiMeter ?? 500,
