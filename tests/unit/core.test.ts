@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { describe, it } from "node:test";
 
 import {
@@ -542,11 +543,11 @@ describe("geolocation cache storage", () => {
       removeItem: (k: string) => storage.delete(k),
     };
 
-    type WindowMockScope = typeof globalThis & {
+    type WindowMockScope = {
       window?: unknown;
       sessionStorage?: typeof mockSessionStorage;
     };
-    const scope = globalThis as WindowMockScope;
+    const scope = globalThis as unknown as WindowMockScope;
 
     // Pasang mock window
     const originalWindow = scope.window;
