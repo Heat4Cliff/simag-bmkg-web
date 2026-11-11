@@ -15,6 +15,17 @@ if (!token) {
 }
 
 const serverUrl = process.env.SONAR_HOST_URL || "http://127.0.0.1:9000";
+const isSonarCloud = new URL(serverUrl).hostname === "sonarcloud.io";
+const projectKey =
+  process.env.SONAR_PROJECT_KEY ||
+  (isSonarCloud ? "Heat4Cliff_simag-bmkg-web" : "simag-bmkg-web");
+const organization =
+  process.env.SONAR_ORGANIZATION || (isSonarCloud ? "heat4cliff" : undefined);
+
+if (isSonarCloud && !organization) {
+  console.error("ERROR: SONAR_ORGANIZATION is required for SonarQube Cloud.");
+  process.exit(1);
+}
 
 console.log(`Starting SonarQube analysis against ${serverUrl}...`);
 
@@ -23,7 +34,8 @@ scanner(
     serverUrl,
     token,
     options: {
-      "sonar.projectKey": "simag-bmkg-web",
+      "sonar.projectKey": projectKey,
+      ...(organization ? { "sonar.organization": organization } : {}),
       "sonar.projectName": "SIMAG BMKG Web",
       "sonar.projectVersion": "0.1.0",
       "sonar.sources": "src",
