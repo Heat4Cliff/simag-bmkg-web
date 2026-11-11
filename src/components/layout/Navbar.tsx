@@ -96,6 +96,7 @@ export default function Navbar({ notifCount = 0 }: NavbarProps) {
                 <div
                   className="fixed inset-0 z-40"
                   onClick={() => setDropdownOpen(false)}
+                  aria-hidden="true"
                 />
                 <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50">
                   <div className="px-4 py-3 border-b border-gray-100">

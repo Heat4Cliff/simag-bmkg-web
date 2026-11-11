@@ -227,6 +227,11 @@ export default function KalenderContent() {
               return (
                 <div 
                   key={day.toString()} 
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      handleOpenForm(dayStr);
+                    }
+                  }}
                   className={`min-h-[120px] bg-white p-2 transition-colors hover:bg-gray-50 cursor-pointer ${!isCurrentMonth ? "bg-gray-50/50 text-gray-400" : "text-gray-700"} ${isHoliday ? "bg-red-50/20" : ""}`}
                   onClick={(e) => {
                     if (e.target === e.currentTarget || (e.target as HTMLElement).tagName === 'DIV') {
@@ -252,18 +257,19 @@ export default function KalenderContent() {
                       </div>
                     )}
                     {dayEvents.map(evt => (
-                      <div 
+                      <button 
                         key={evt.id} 
+                        type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           openEventDetail(evt);
                         }}
-                        className="px-2 py-1 text-[11px] font-semibold rounded-md truncate text-white shadow-sm cursor-pointer hover:opacity-90"
+                        className="w-full text-left px-2 py-1 text-[11px] font-semibold rounded-md truncate text-white shadow-sm cursor-pointer hover:opacity-90 block"
                         style={{ backgroundColor: evt.color }}
                         title={evt.title}
                       >
                         {evt.title}
-                      </div>
+                      </button>
                     ))}
                   </div>
                 </div>

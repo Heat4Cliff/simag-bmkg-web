@@ -398,6 +398,7 @@ export default function TempatMagangContent() {
           <div
             className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm"
             onClick={() => !isSubmitting && setIsModalOpen(false)}
+            aria-hidden="true"
           />
 
           <div className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
