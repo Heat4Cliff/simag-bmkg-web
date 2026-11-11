@@ -1,6 +1,7 @@
 import { Pool } from "pg";
 import bcrypt from "bcryptjs";
-import { spawn, ChildProcess } from "node:child_process";
+import { spawn, execFileSync, ChildProcess } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 import { TEST_USERS, TEST_TEMPAT_MAGANG } from "../fixtures/test-data";
 
@@ -440,6 +441,19 @@ export async function startIsolatedTestServer(): Promise<string> {
 
   const testDbUrl = await ensureTestDatabaseExists();
   const nextBin = path.join(process.cwd(), "node_modules", "next", "dist", "bin", "next");
+  const buildIdPath = path.join(process.cwd(), ".next", "BUILD_ID");
+
+  if (!fs.existsSync(buildIdPath)) {
+    execFileSync(process.execPath, [nextBin, "build", "--webpack"], {
+      cwd: process.cwd(),
+      env: {
+        ...process.env,
+        DATABASE_URL: testDbUrl,
+        NEXTAUTH_URL: "",
+      },
+      stdio: "inherit",
+    });
+  }
 
   isolatedServerProcess = spawn(
     process.execPath,
