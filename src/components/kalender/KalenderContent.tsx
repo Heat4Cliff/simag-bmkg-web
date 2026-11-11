@@ -227,6 +227,7 @@ export default function KalenderContent() {
               return (
                 <div 
                   key={day.toString()} 
+                  aria-hidden="true"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       handleOpenForm(dayStr);
@@ -370,8 +371,9 @@ export default function KalenderContent() {
             </div>
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Judul Kegiatan *</label>
+                <label htmlFor="kalender-judul" className="block text-xs font-semibold text-gray-600 mb-1.5">Judul Kegiatan *</label>
                 <input 
+                  id="kalender-judul"
                   type="text" 
                   required
                   value={formData.judul}
@@ -383,8 +385,9 @@ export default function KalenderContent() {
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Tanggal *</label>
+                  <label htmlFor="kalender-tanggal" className="block text-xs font-semibold text-gray-600 mb-1.5">Tanggal *</label>
                   <input 
+                    id="kalender-tanggal"
                     type="date" 
                     required
                     value={formData.tanggal}
@@ -393,8 +396,9 @@ export default function KalenderContent() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Jam</label>
+                  <label htmlFor="kalender-jam" className="block text-xs font-semibold text-gray-600 mb-1.5">Jam</label>
                   <input 
+                    id="kalender-jam"
                     type="time" 
                     value={formData.jam}
                     onChange={e => setFormData({...formData, jam: e.target.value})}
@@ -404,8 +408,9 @@ export default function KalenderContent() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Deskripsi</label>
+                <label htmlFor="kalender-deskripsi" className="block text-xs font-semibold text-gray-600 mb-1.5">Deskripsi</label>
                 <textarea 
+                  id="kalender-deskripsi"
                   rows={3}
                   value={formData.deskripsi}
                   onChange={e => setFormData({...formData, deskripsi: e.target.value})}

@@ -246,8 +246,8 @@ export async function GET() {
   );
 
   const kantor = {
-    nama: profile?.tempatMagang?.namaInstansi || "Kantor BMKG",
-    alamat: profile?.tempatMagang?.alamat || "Stasiun Meteorologi / Kantor BMKG",
+    nama: profile?.tempatMagang?.namaInstansi ?? "Kantor BMKG",
+    alamat: profile?.tempatMagang?.alamat ?? "Stasiun Meteorologi / Kantor BMKG",
     latitude: profile?.tempatMagang?.latitudeKantor ?? KOORDINAT_KANTOR.latitude,
     longitude: profile?.tempatMagang?.longitudeKantor ?? KOORDINAT_KANTOR.longitude,
     radius: profile?.tempatMagang?.radiusAbsensiMeter ?? RADIUS_ABSENSI_METER,
@@ -259,7 +259,7 @@ export async function GET() {
     keteranganLibur: infoLibur.keterangan,
     kantor,
     isPeriodeSelesai,
-    periodeMulai: profile?.periodeMulai?.toISOString() || null,
-    periodeSelesai: profile?.periodeSelesai?.toISOString() || null,
+    periodeMulai: profile?.periodeMulai?.toISOString() ?? null,
+    periodeSelesai: profile?.periodeSelesai?.toISOString() ?? null,
   });
 }

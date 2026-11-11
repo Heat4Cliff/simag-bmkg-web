@@ -87,8 +87,9 @@ export default function PengaturanContent() {
           <div className="p-6 space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nama Aplikasi / Institusi Utama</label>
+                <label htmlFor="pengaturan-nama-instansi" className="block text-sm font-semibold text-gray-700 mb-1.5">Nama Aplikasi / Institusi Utama</label>
                 <input
+                  id="pengaturan-nama-instansi"
                   type="text"
                   required
                   value={form.namaInstansi}
@@ -97,10 +98,11 @@ export default function PengaturanContent() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Kontak / Telepon Utama</label>
+                <label htmlFor="pengaturan-kontak" className="block text-sm font-semibold text-gray-700 mb-1.5">Kontak / Telepon Utama</label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
+                    id="pengaturan-kontak"
                     type="text"
                     value={form.kontak}
                     onChange={e => setForm({...form, kontak: e.target.value})}
@@ -109,8 +111,9 @@ export default function PengaturanContent() {
                 </div>
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Alamat Lengkap Kampus Utama</label>
+                <label htmlFor="pengaturan-alamat" className="block text-sm font-semibold text-gray-700 mb-1.5">Alamat Lengkap Kampus Utama</label>
                 <textarea
+                  id="pengaturan-alamat"
                   rows={2}
                   value={form.alamat}
                   onChange={e => setForm({...form, alamat: e.target.value})}
@@ -123,10 +126,11 @@ export default function PengaturanContent() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Latitude Kampus Utama / Default</label>
+                <label htmlFor="pengaturan-latitude" className="block text-sm font-semibold text-gray-700 mb-1.5">Latitude Kampus Utama / Default</label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
+                    id="pengaturan-latitude"
                     type="text"
                     required
                     value={form.latitudeKantor}
@@ -136,10 +140,11 @@ export default function PengaturanContent() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Longitude Kampus Utama / Default</label>
+                <label htmlFor="pengaturan-longitude" className="block text-sm font-semibold text-gray-700 mb-1.5">Longitude Kampus Utama / Default</label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
+                    id="pengaturan-longitude"
                     type="text"
                     required
                     value={form.longitudeKantor}
@@ -149,10 +154,11 @@ export default function PengaturanContent() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Radius Absensi (Meter)</label>
+                <label htmlFor="pengaturan-radius" className="block text-sm font-semibold text-gray-700 mb-1.5">Radius Absensi (Meter)</label>
                 <div className="relative">
                   <Compass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
+                    id="pengaturan-radius"
                     type="number"
                     required
                     value={form.radiusAbsensiMeter}

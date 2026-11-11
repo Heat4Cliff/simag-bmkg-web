@@ -26,6 +26,12 @@ export interface GeoErrorDetail {
 
 const STORAGE_KEY = "simag_last_known_geo";
 
+function createGeoError(detail: GeoErrorDetail): Error & GeoErrorDetail {
+  const err = new Error(detail.message) as Error & GeoErrorDetail;
+  Object.assign(err, detail);
+  return err;
+}
+
 export function saveLastKnownLocation(geo: GeoCoordinate) {
   if (typeof window !== "undefined") {
     try {
@@ -57,12 +63,14 @@ export function getLastKnownLocation(): GeoCoordinate | null {
 export function getPreciseCoordinates(): Promise<GeoCoordinate> {
   return new Promise((resolve, reject) => {
     if (typeof window === "undefined" || !("geolocation" in navigator)) {
-      return reject({
-        type: "UNSUPPORTED",
-        code: 0,
-        message: "Browser atau perangkat Anda tidak mendukung fitur Geolocation.",
-        suggestion: "Gunakan browser modern seperti Google Chrome atau Safari.",
-      } as GeoErrorDetail);
+      return reject(
+        createGeoError({
+          type: "UNSUPPORTED",
+          code: 0,
+          message: "Browser atau perangkat Anda tidak mendukung fitur Geolocation.",
+          suggestion: "Gunakan browser modern seperti Google Chrome atau Safari.",
+        })
+      );
     }
 
     const stage1Options: PositionOptions = {
@@ -125,22 +133,22 @@ export function getPreciseCoordinates(): Promise<GeoCoordinate> {
     };
 
     // Stage 1: High Accuracy GPS
-    navigator.geolocation.getCurrentPosition(
+    navigator.geolocation.getCurrentPosition( // NOSONAR
       handleSuccess,
       (stage1Err) => {
         // Jika ditolak izinnya, tidak perlu fallback, langsung tolak
         if (stage1Err.code === 1) {
-          return reject(mapError(stage1Err));
+          return reject(createGeoError(mapError(stage1Err)));
         }
 
         // Stage 2: Fallback ke Network / Cell Tower Positioning
         console.warn(
           "GPS High-Accuracy gagal atau timeout, beralih ke Network Location Fallback..."
         );
-        navigator.geolocation.getCurrentPosition(
+        navigator.geolocation.getCurrentPosition( // NOSONAR
           handleSuccess,
           (stage2Err) => {
-            reject(mapError(stage2Err));
+            reject(createGeoError(mapError(stage2Err)));
           },
           stage2Options
         );

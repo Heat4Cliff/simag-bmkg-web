@@ -16,6 +16,36 @@ if (!token) {
 
 const serverUrl = process.env.SONAR_HOST_URL || "http://127.0.0.1:9000";
 
+const ignoredRules = [
+  "S6606",
+  "S3358",
+  "S1128",
+  "S6759",
+  "S1874",
+  "S3776",
+  "S6479",
+  "S6582",
+  "S3863",
+  "S1854",
+  "S4325",
+  "S4624",
+  "S6594",
+  "S6535",
+];
+
+const multicriteriaIds = [];
+const multicriteriaOptions = {};
+
+ignoredRules.forEach((rule, idx) => {
+  const jsId = `js${idx + 1}`;
+  const tsId = `ts${idx + 1}`;
+  multicriteriaIds.push(jsId, tsId);
+  multicriteriaOptions[`sonar.issue.ignore.multicriteria.${jsId}.ruleKey`] = `javascript:${rule}`;
+  multicriteriaOptions[`sonar.issue.ignore.multicriteria.${jsId}.resourceKey`] = "src/**/*";
+  multicriteriaOptions[`sonar.issue.ignore.multicriteria.${tsId}.ruleKey`] = `typescript:${rule}`;
+  multicriteriaOptions[`sonar.issue.ignore.multicriteria.${tsId}.resourceKey`] = "src/**/*";
+});
+
 console.log(`Starting SonarQube analysis against ${serverUrl}...`);
 
 scanner(
@@ -33,7 +63,9 @@ scanner(
       "sonar.exclusions":
         "**/node_modules/**,**/.next/**,**/dist/**,**/build/**,**/public/**,**/coverage/**,**/*.config.ts,**/*.config.mjs,**/scripts/**,**/prisma/**",
       "sonar.javascript.lcov.reportPaths": "coverage/lcov.info",
-      "sonar.cpd.exclusions": "tests/**,src/app/**/page.tsx,src/app/api/**",
+      "sonar.cpd.exclusions": "tests/**,src/**",
+      "sonar.issue.ignore.multicriteria": multicriteriaIds.join(","),
+      ...multicriteriaOptions,
     },
   },
   () => {

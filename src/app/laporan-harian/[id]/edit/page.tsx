@@ -94,8 +94,9 @@ export default function EditLaporanPage({ params }: { params: Promise<{ id: stri
 
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-5">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">Tanggal *</label>
+          <label htmlFor="edit-laporan-tanggal" className="block text-sm font-semibold text-gray-700 mb-1.5">Tanggal *</label>
           <input
+            id="edit-laporan-tanggal"
             type="date"
             value={form.tanggal}
             onChange={(e) => setForm({ ...form, tanggal: e.target.value })}
@@ -104,8 +105,9 @@ export default function EditLaporanPage({ params }: { params: Promise<{ id: stri
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">Judul Laporan *</label>
+          <label htmlFor="edit-laporan-judul" className="block text-sm font-semibold text-gray-700 mb-1.5">Judul Laporan *</label>
           <input
+            id="edit-laporan-judul"
             type="text"
             value={form.judul}
             onChange={(e) => setForm({ ...form, judul: e.target.value })}
@@ -115,11 +117,11 @@ export default function EditLaporanPage({ params }: { params: Promise<{ id: stri
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-            Deskripsi Kegiatan *
-            <span className="text-xs text-gray-400 font-normal ml-2">(Jelaskan kegiatan yang dilakukan hari ini)</span>
+          <label htmlFor="edit-laporan-deskripsi" className="block text-sm font-semibold text-gray-700 mb-1.5">
+            Deskripsi Kegiatan * <span className="text-xs text-gray-400 font-normal ml-2">(Jelaskan kegiatan yang dilakukan hari ini)</span>
           </label>
           <textarea
+            id="edit-laporan-deskripsi"
             value={form.deskripsi}
             onChange={(e) => setForm({ ...form, deskripsi: e.target.value })}
             rows={6}
@@ -130,11 +132,11 @@ export default function EditLaporanPage({ params }: { params: Promise<{ id: stri
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-            Kendala
-            <span className="text-xs text-gray-400 font-normal ml-2">(opsional)</span>
+          <label htmlFor="edit-laporan-kendala" className="block text-sm font-semibold text-gray-700 mb-1.5">
+            Kendala <span className="text-xs text-gray-400 font-normal ml-2">(opsional)</span>
           </label>
           <textarea
+            id="edit-laporan-kendala"
             value={form.kendala}
             onChange={(e) => setForm({ ...form, kendala: e.target.value })}
             rows={3}

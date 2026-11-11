@@ -35,8 +35,11 @@ import {
 import {
   saveLastKnownLocation,
   getLastKnownLocation,
+  getPreciseCoordinates,
   GeoCoordinate,
+  GeoErrorDetail,
 } from "../../src/lib/geo";
+import { signJwt, verifyJwt } from "../../src/lib/jwt";
 
 // ============================================================================
 // 1. GEOFENCE PRESENSI: hitungJarakMeter & Koordinat Kantor
@@ -511,10 +514,19 @@ describe("format dan kalkulasi tanggal waktu Jakarta", () => {
     assert.ok([28, 29, 30, 31].includes(day), "hari akhir bulan harus 28, 29, 30, atau 31");
     assert.equal(d.toISOString().slice(11), "23:59:59.999Z");
   });
+
+  it("menerima argumen ISO string maupun Date object pada formatTanggal, formatTanggalCompact, dan formatWaktu", () => {
+    const isoStr = "2026-11-10T08:30:00Z";
+    const dateObj = new Date(isoStr);
+
+    assert.equal(formatTanggal(isoStr), formatTanggal(dateObj));
+    assert.equal(formatTanggalCompact(isoStr), formatTanggalCompact(dateObj));
+    assert.equal(formatWaktu(isoStr), formatWaktu(dateObj));
+  });
 });
 
 // ============================================================================
-// 7. GEOLOCATION STORAGE & CACHE HELPER: geo.ts
+// 7. GEOLOCATION STORAGE, CACHE & TWO-STAGE FALLBACK: geo.ts
 // ============================================================================
 describe("geolocation cache storage", () => {
   it("mengembalikan null jika dipanggil di luar browser (SSR / Node.js)", () => {
@@ -578,5 +590,321 @@ describe("geolocation cache storage", () => {
         delete scope.sessionStorage;
       }
     }
+  });
+
+  it("mengembalikan null pada getLastKnownLocation saat timestamp cache kedaluwarsa (> 10 menit) atau JSON tidak valid", () => {
+    const storage = new Map<string, string>();
+    const mockSessionStorage = {
+      setItem: (k: string, v: string) => storage.set(k, v),
+      getItem: (k: string) => storage.get(k) ?? null,
+      removeItem: (k: string) => storage.delete(k),
+    };
+    const scope = globalThis as typeof globalThis & {
+      window?: unknown;
+      sessionStorage?: typeof mockSessionStorage;
+    };
+    const originalWindow = scope.window;
+    const originalSessionStorage = scope.sessionStorage;
+    scope.window = globalThis;
+    scope.sessionStorage = mockSessionStorage;
+
+    try {
+      // Cache kosong
+      assert.equal(getLastKnownLocation(), null);
+
+      // Cache kedaluwarsa (> 10 menit)
+      storage.set(
+        "simag_last_known_geo",
+        JSON.stringify({
+          lat: -7.71865,
+          lon: 109.01189,
+          accuracy: 10,
+          timestamp: Date.now() - 15 * 60 * 1000,
+        })
+      );
+      assert.equal(getLastKnownLocation(), null);
+
+      // JSON tidak valid
+      storage.set("simag_last_known_geo", "invalid-json{{{");
+      assert.equal(getLastKnownLocation(), null);
+    } finally {
+      if (originalWindow !== undefined) scope.window = originalWindow;
+      else delete scope.window;
+      if (originalSessionStorage !== undefined) scope.sessionStorage = originalSessionStorage;
+      else delete scope.sessionStorage;
+    }
+  });
+});
+
+describe("geolocation two-stage fallback: getPreciseCoordinates", () => {
+  function withBrowserGeoMock<T>(
+    geolocationMock: Partial<Geolocation> | undefined,
+    fn: (storage: Map<string, string>) => Promise<T>
+  ): Promise<T> {
+    const storage = new Map<string, string>();
+    const mockSessionStorage = {
+      setItem: (k: string, v: string) => storage.set(k, v),
+      getItem: (k: string) => storage.get(k) ?? null,
+      removeItem: (k: string) => storage.delete(k),
+    };
+    const scope = globalThis as typeof globalThis & {
+      window?: unknown;
+      sessionStorage?: typeof mockSessionStorage;
+    };
+    const originalWindow = scope.window;
+    const originalSessionStorage = scope.sessionStorage;
+    const originalNavigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+
+    scope.window = globalThis;
+    scope.sessionStorage = mockSessionStorage;
+    Object.defineProperty(globalThis, "navigator", {
+      value: geolocationMock ? { geolocation: geolocationMock } : {},
+      configurable: true,
+      writable: true,
+    });
+
+    return fn(storage).finally(() => {
+      if (originalWindow !== undefined) scope.window = originalWindow;
+      else delete scope.window;
+      if (originalSessionStorage !== undefined) scope.sessionStorage = originalSessionStorage;
+      else delete scope.sessionStorage;
+      if (originalNavigatorDescriptor) {
+        Object.defineProperty(globalThis, "navigator", originalNavigatorDescriptor);
+      }
+    });
+  }
+
+  it("menolak dengan UNSUPPORTED (dan instanceof Error) ketika navigator.geolocation tidak tersedia", async () => {
+    await withBrowserGeoMock(undefined, async () => {
+      await assert.rejects(
+        () => getPreciseCoordinates(),
+        (err: unknown) => {
+          assert.equal(err instanceof Error, true);
+          const geoErr = err as Error & GeoErrorDetail;
+          assert.equal(geoErr.type, "UNSUPPORTED");
+          assert.equal(geoErr.code, 0);
+          return true;
+        }
+      );
+    });
+  });
+
+  it("berhasil mengambil koordinat pada Stage 1 (High Accuracy GPS) dan menyimpannya ke sessionStorage", async () => {
+    const now = Date.now();
+    await withBrowserGeoMock(
+      {
+        getCurrentPosition: (success, _error, options) => {
+          assert.equal(options?.enableHighAccuracy, true);
+          success({
+            coords: {
+              latitude: -7.7186515,
+              longitude: 109.0118975,
+              accuracy: 8,
+              altitude: null,
+              altitudeAccuracy: null,
+              heading: null,
+              speed: null,
+              toJSON: () => ({}),
+            },
+            timestamp: now,
+            toJSON: () => ({}),
+          });
+        },
+      },
+      async (storage) => {
+        const coord = await getPreciseCoordinates();
+        assert.deepEqual(coord, {
+          lat: -7.7186515,
+          lon: 109.0118975,
+          accuracy: 8,
+          timestamp: now,
+        });
+        assert.ok(storage.has("simag_last_known_geo"));
+        assert.deepEqual(JSON.parse(storage.get("simag_last_known_geo")!), coord);
+      }
+    );
+  });
+
+  it("langsung menolak dengan PERMISSION_DENIED (code: 1) tanpa memanggil Stage 2 jika Stage 1 ditolak izinnya", async () => {
+    let callCount = 0;
+    await withBrowserGeoMock(
+      {
+        getCurrentPosition: (_success, error) => {
+          callCount++;
+          error?.({
+            code: 1,
+            message: "User denied Geolocation",
+            PERMISSION_DENIED: 1,
+            POSITION_UNAVAILABLE: 2,
+            TIMEOUT: 3,
+          });
+        },
+      },
+      async () => {
+        await assert.rejects(
+          () => getPreciseCoordinates(),
+          (err: unknown) => {
+            assert.equal(err instanceof Error, true);
+            const geoErr = err as Error & GeoErrorDetail;
+            assert.equal(geoErr.type, "PERMISSION_DENIED");
+            assert.equal(geoErr.code, 1);
+            return true;
+          }
+        );
+        assert.equal(callCount, 1);
+      }
+    );
+  });
+
+  it("melakukan fallback ke Stage 2 ketika Stage 1 gagal dengan code 2 atau code 3 dan menyelesaikan dengan fallback accuracy/timestamp", async () => {
+    let stageCalls = 0;
+    await withBrowserGeoMock(
+      {
+        getCurrentPosition: (success, error, options) => {
+          stageCalls++;
+          if (stageCalls === 1) {
+            assert.equal(options?.enableHighAccuracy, true);
+            error?.({
+              code: 3,
+              message: "Timeout",
+              PERMISSION_DENIED: 1,
+              POSITION_UNAVAILABLE: 2,
+              TIMEOUT: 3,
+            });
+          } else {
+            assert.equal(options?.enableHighAccuracy, false);
+            success({
+              coords: {
+                latitude: -7.718,
+                longitude: 109.011,
+                accuracy: 0,
+                altitude: null,
+                altitudeAccuracy: null,
+                heading: null,
+                speed: null,
+                toJSON: () => ({}),
+              },
+              timestamp: 0,
+              toJSON: () => ({}),
+            });
+          }
+        },
+      },
+      async () => {
+        const before = Date.now();
+        const coord = await getPreciseCoordinates();
+        assert.equal(stageCalls, 2);
+        assert.equal(coord.lat, -7.718);
+        assert.equal(coord.lon, 109.011);
+        assert.equal(coord.accuracy, 0);
+        assert.ok(coord.timestamp >= before);
+      }
+    );
+  });
+
+  it("menolak dari Stage 2 dengan error terpetakan untuk POSITION_UNAVAILABLE (2), TIMEOUT (3), dan UNKNOWN (0 dengan & tanpa pesan)", async () => {
+    const cases: Array<{
+      stage2Code: number;
+      stage2Message: string;
+      expectedType: GeoErrorDetail["type"];
+      expectedCode: number;
+      expectedMessagePart: string;
+    }> = [
+      {
+        stage2Code: 2,
+        stage2Message: "Position unavailable",
+        expectedType: "POSITION_UNAVAILABLE",
+        expectedCode: 2,
+        expectedMessagePart: "Layanan Lokasi (GPS)",
+      },
+      {
+        stage2Code: 3,
+        stage2Message: "Timed out",
+        expectedType: "TIMEOUT",
+        expectedCode: 3,
+        expectedMessagePart: "Waktu pencarian lokasi GPS habis",
+      },
+      {
+        stage2Code: 0,
+        stage2Message: "Custom hardware sensor error",
+        expectedType: "UNKNOWN",
+        expectedCode: 0,
+        expectedMessagePart: "Custom hardware sensor error",
+      },
+      {
+        stage2Code: 0,
+        stage2Message: "",
+        expectedType: "UNKNOWN",
+        expectedCode: 0,
+        expectedMessagePart: "Gagal memperoleh lokasi.",
+      },
+    ];
+
+    for (const tc of cases) {
+      let call = 0;
+      await withBrowserGeoMock(
+        {
+          getCurrentPosition: (_success, error) => {
+            call++;
+            if (call === 1) {
+              error?.({
+                code: 2,
+                message: "Stage 1 unavailable",
+                PERMISSION_DENIED: 1,
+                POSITION_UNAVAILABLE: 2,
+                TIMEOUT: 3,
+              });
+            } else {
+              error?.({
+                code: tc.stage2Code,
+                message: tc.stage2Message,
+                PERMISSION_DENIED: 1,
+                POSITION_UNAVAILABLE: 2,
+                TIMEOUT: 3,
+              });
+            }
+          },
+        },
+        async () => {
+          await assert.rejects(
+            () => getPreciseCoordinates(),
+            (err: unknown) => {
+              assert.equal(err instanceof Error, true);
+              const geoErr = err as Error & GeoErrorDetail;
+              assert.equal(geoErr.type, tc.expectedType);
+              assert.equal(geoErr.code, tc.expectedCode);
+              assert.ok(geoErr.message.includes(tc.expectedMessagePart));
+              assert.ok(geoErr.suggestion.length > 0);
+              return true;
+            }
+          );
+        }
+      );
+    }
+  });
+});
+
+// ============================================================================
+// 8. JSON WEB TOKEN HELPER: jwt.ts
+// ============================================================================
+describe("autentikasi token: signJwt dan verifyJwt", () => {
+  it("menandatangani dan memverifikasi token JWT valid dengan masa berlaku default maupun kustom", () => {
+    const tokenDefault = signJwt({ userId: "u-123", role: "MAHASISWA" });
+    assert.equal(typeof tokenDefault, "string");
+    const decodedDefault = verifyJwt(tokenDefault);
+    assert.ok(decodedDefault);
+    assert.equal(decodedDefault.userId, "u-123");
+    assert.equal(decodedDefault.role, "MAHASISWA");
+
+    const tokenCustom = signJwt({ userId: "u-456", role: "DPL" }, "1h");
+    const decodedCustom = verifyJwt(tokenCustom);
+    assert.ok(decodedCustom);
+    assert.equal(decodedCustom.userId, "u-456");
+    assert.equal(decodedCustom.role, "DPL");
+  });
+
+  it("mengembalikan null ketika memverifikasi token JWT yang rusak atau tidak valid", () => {
+    assert.equal(verifyJwt("token.tidak.valid"), null);
+    assert.equal(verifyJwt(""), null);
   });
 });

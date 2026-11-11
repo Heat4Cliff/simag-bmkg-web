@@ -89,8 +89,7 @@ export default function BuatLaporanPage() {
 
         <div>
           <label htmlFor="laporan-deskripsi" className="block text-sm font-semibold text-gray-700 mb-1.5">
-            Deskripsi Kegiatan *
-            <span className="text-xs text-gray-400 font-normal ml-2">(Jelaskan kegiatan yang dilakukan hari ini)</span>
+            Deskripsi Kegiatan * <span className="text-xs text-gray-400 font-normal ml-2">(Jelaskan kegiatan yang dilakukan hari ini)</span>
           </label>
           <textarea
             id="laporan-deskripsi"
@@ -105,8 +104,7 @@ export default function BuatLaporanPage() {
 
         <div>
           <label htmlFor="laporan-kendala" className="block text-sm font-semibold text-gray-700 mb-1.5">
-            Kendala
-            <span className="text-xs text-gray-400 font-normal ml-2">(opsional)</span>
+            Kendala <span className="text-xs text-gray-400 font-normal ml-2">(opsional)</span>
           </label>
           <textarea
             id="laporan-kendala"

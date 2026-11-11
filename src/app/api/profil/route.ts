@@ -25,14 +25,14 @@ export async function GET() {
       id: user.id,
       nama: user.nama,
       email: user.email,
-      username: user.username || "",
+      username: user.username ?? "",
       role: user.role,
-      noHp: user.mahasiswaProfile?.noHp || user.dplProfile?.noHp || "",
-      programStudi: user.mahasiswaProfile?.programStudi || "-",
+      noHp: user.mahasiswaProfile?.noHp ?? user.dplProfile?.noHp ?? "",
+      programStudi: user.mahasiswaProfile?.programStudi ?? "-",
       institusiAsal: "-",
       periodeMulai: user.mahasiswaProfile?.periodeMulai,
       periodeSelesai: user.mahasiswaProfile?.periodeSelesai,
-      fotoProfil: user.fotoProfil || null,
+      fotoProfil: user.fotoProfil ?? null,
     });
   } catch (error) {
     return NextResponse.json({ error: "Gagal mengambil profil" }, { status: 500 });

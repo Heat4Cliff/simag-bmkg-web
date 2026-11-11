@@ -349,8 +349,9 @@ export default function AkunContent() {
             
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nama Lengkap *</label>
+                <label htmlFor="akun-nama" className="block text-sm font-semibold text-gray-700 mb-1.5">Nama Lengkap *</label>
                 <input
+                  id="akun-nama"
                   type="text"
                   required
                   value={form.nama}
@@ -361,8 +362,9 @@ export default function AkunContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email *</label>
+                <label htmlFor="akun-email" className="block text-sm font-semibold text-gray-700 mb-1.5">Email *</label>
                 <input
+                  id="akun-email"
                   type="email"
                   required
                   value={form.email}
@@ -373,10 +375,11 @@ export default function AkunContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                <label htmlFor="akun-password" className="block text-sm font-semibold text-gray-700 mb-1.5">
                   Password {editingId && <span className="text-gray-400 font-normal">(Kosongkan jika tidak diubah)</span>} {!editingId && "*"}
                 </label>
                 <input
+                  id="akun-password"
                   type="text"
                   required={!editingId}
                   value={form.password}
@@ -387,8 +390,9 @@ export default function AkunContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Role Pengguna *</label>
+                <label htmlFor="akun-role" className="block text-sm font-semibold text-gray-700 mb-1.5">Role Pengguna *</label>
                 <select
+                  id="akun-role"
                   value={form.role}
                   onChange={(e) => setForm({ ...form, role: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1E8A3C]/30 focus:border-[#1E8A3C]"

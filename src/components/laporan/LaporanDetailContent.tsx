@@ -165,7 +165,7 @@ export default function LaporanDetailContent({ id }: { id: string }) {
                 {laporan.lampiran.toLowerCase().match(/\.(jpeg|jpg|gif|png)$/) != null ? (
                   <img src={laporan.lampiran} alt="Lampiran" className="max-w-full rounded-xl border border-gray-200" />
                 ) : laporan.lampiran.toLowerCase().match(/\.(pdf)$/) != null ? (
-                  <iframe src={laporan.lampiran} className="w-full h-[600px] rounded-xl border border-gray-200" />
+                  <iframe src={laporan.lampiran} title="Pratinjau Lampiran Laporan Harian" className="w-full h-[600px] rounded-xl border border-gray-200" />
                 ) : (
                   <div className="bg-gray-50 border border-gray-100 p-4 rounded-xl flex items-center justify-between">
                     <span className="text-sm text-gray-600">File lampiran tidak dapat dipratinjau di browser.</span>

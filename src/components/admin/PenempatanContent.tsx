@@ -141,8 +141,9 @@ export default function PenempatanContent() {
 
                 <div className="space-y-2 pt-1 border-t border-gray-100">
                   <div>
-                    <label className="block text-[11px] font-semibold text-gray-600 mb-1">Tempat Magang</label>
+                    <label htmlFor={`tempat-magang-${m.userId}`} className="block text-[11px] font-semibold text-gray-600 mb-1">Tempat Magang</label>
                     <select
+                      id={`tempat-magang-${m.userId}`}
                       className="w-full border border-gray-200 rounded-lg px-2.5 py-2 text-xs focus:ring-2 focus:ring-[#1E8A3C] bg-white disabled:opacity-50"
                       value={m.tempatMagangId || ""}
                       onChange={(e) => handleAssign(m.userId, "tempatMagangId", e.target.value)}
@@ -156,8 +157,9 @@ export default function PenempatanContent() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-gray-600 mb-1">DPL Kampus</label>
+                    <label htmlFor={`dpl-kampus-${m.userId}`} className="block text-[11px] font-semibold text-gray-600 mb-1">DPL Kampus</label>
                     <select
+                      id={`dpl-kampus-${m.userId}`}
                       className="w-full border border-gray-200 rounded-lg px-2.5 py-2 text-xs focus:ring-2 focus:ring-[#1E8A3C] bg-white disabled:opacity-50"
                       value={m.dplId || ""}
                       onChange={(e) => handleAssign(m.userId, "dplProfileId", e.target.value)}
@@ -171,9 +173,10 @@ export default function PenempatanContent() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-gray-600 mb-1">Mentor Instansi</label>
+                    <label htmlFor={`mentor-instansi-${m.userId}`} className="block text-[11px] font-semibold text-gray-600 mb-1">Mentor Instansi</label>
                     <div className="flex items-center gap-2">
                       <select
+                        id={`mentor-instansi-${m.userId}`}
                         className="w-full border border-gray-200 rounded-lg px-2.5 py-2 text-xs focus:ring-2 focus:ring-[#1E8A3C] bg-white disabled:opacity-50"
                         value={m.mentorId || ""}
                         onChange={(e) => handleAssign(m.userId, "mentorProfileId", e.target.value)}
