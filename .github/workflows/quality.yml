@@ -28,8 +28,12 @@ jobs:
       NEXTAUTH_SECRET: ci-test-secret-key-simag-bmkg-non-production-2026
       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_PROJECT_KEY: Heat4Cliff_simag-bmkg-web
+      SONAR_ORGANIZATION: heat4cliff
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
