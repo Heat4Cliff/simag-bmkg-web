@@ -33,7 +33,11 @@ scanner(
       "sonar.exclusions":
         "**/node_modules/**,**/.next/**,**/dist/**,**/build/**,**/public/**,**/coverage/**,**/*.config.ts,**/*.config.mjs,**/scripts/**,**/prisma/**",
       "sonar.javascript.lcov.reportPaths": "coverage/lcov.info",
+      "sonar.coverage.exclusions": "src/app/**,src/components/**,src/middleware.ts,src/types/**",
       "sonar.cpd.exclusions": "tests/**,src/app/**/page.tsx,src/app/api/**",
+      // Do not report success before SonarQube has evaluated the submitted analysis.
+      "sonar.qualitygate.wait": "true",
+      "sonar.qualitygate.timeout": "300",
     },
   },
   () => {

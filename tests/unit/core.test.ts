@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { describe, it } from "node:test";
 
 import {
@@ -35,6 +36,7 @@ import {
 import {
   saveLastKnownLocation,
   getLastKnownLocation,
+  getPreciseCoordinates,
   GeoCoordinate,
 } from "../../src/lib/geo";
 
@@ -530,11 +532,11 @@ describe("geolocation cache storage", () => {
       removeItem: (k: string) => storage.delete(k),
     };
 
-    type WindowMockScope = typeof globalThis & {
+    type WindowMockScope = {
       window?: unknown;
       sessionStorage?: typeof mockSessionStorage;
     };
-    const scope = globalThis as WindowMockScope;
+    const scope = globalThis as unknown as WindowMockScope;
 
     // Pasang mock window
     const originalWindow = scope.window;
@@ -578,5 +580,131 @@ describe("geolocation cache storage", () => {
         delete scope.sessionStorage;
       }
     }
+  });
+
+  it("mengembalikan error UNSUPPORTED saat Geolocation API tidak tersedia", async () => {
+    await assert.rejects(
+      () => getPreciseCoordinates(),
+      (error: unknown) => (error as { type?: string }).type === "UNSUPPORTED"
+    );
+  });
+
+  it("menggunakan GPS high-accuracy dan menyimpan koordinat yang berhasil dibaca", async () => {
+    type BrowserScope = Record<string, unknown>;
+    const scope = globalThis as unknown as BrowserScope;
+    const originalWindow = scope.window;
+    const navigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+    const storage = new Map<string, string>();
+    const timestamp = Date.now();
+
+    scope.window = scope;
+    scope.sessionStorage = {
+      setItem: (key: string, value: string) => storage.set(key, value),
+      getItem: (key: string) => storage.get(key) || null,
+      removeItem: (key: string) => storage.delete(key),
+      clear: () => storage.clear(),
+      key: () => null,
+      get length() { return storage.size; },
+    };
+    Object.defineProperty(globalThis, "navigator", { configurable: true, value: {
+      geolocation: {
+        getCurrentPosition: (success: PositionCallback, _failure: PositionErrorCallback, options?: PositionOptions) => {
+          assert.equal(options?.enableHighAccuracy, true);
+          success({
+            coords: { latitude: -7.71865, longitude: 109.01189, accuracy: 8 } as GeolocationCoordinates,
+            timestamp,
+          } as GeolocationPosition);
+        },
+      },
+    } });
+
+    try {
+      const coordinate = await getPreciseCoordinates();
+      assert.deepEqual(coordinate, { lat: -7.71865, lon: 109.01189, accuracy: 8, timestamp });
+      assert.deepEqual(getLastKnownLocation(), coordinate);
+    } finally {
+      if (originalWindow === undefined) delete scope.window;
+      else scope.window = originalWindow;
+      if (navigatorDescriptor) Object.defineProperty(globalThis, "navigator", navigatorDescriptor);
+      else delete scope.navigator;
+    }
+  });
+
+  it("menolak izin lokasi dan menjalankan fallback jaringan untuk error GPS lain", async () => {
+    type BrowserScope = Record<string, unknown>;
+    const scope = globalThis as unknown as BrowserScope;
+    const originalWindow = scope.window;
+    const navigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+    scope.window = scope;
+
+    const permissionDenied = { code: 1, message: "blocked" } as GeolocationPositionError;
+    Object.defineProperty(globalThis, "navigator", { configurable: true, value: {
+      geolocation: {
+        getCurrentPosition: (_success: PositionCallback, failure: PositionErrorCallback) => failure(permissionDenied),
+      },
+    } });
+
+    try {
+      await assert.rejects(
+        () => getPreciseCoordinates(),
+        (error: unknown) => (error as { type?: string }).type === "PERMISSION_DENIED"
+      );
+
+      let attempt = 0;
+      const unavailable = { code: 2, message: "unavailable" } as GeolocationPositionError;
+      const timeout = { code: 3, message: "timeout" } as GeolocationPositionError;
+      Object.defineProperty(globalThis, "navigator", { configurable: true, value: {
+        geolocation: {
+          getCurrentPosition: (_success: PositionCallback, failure: PositionErrorCallback, options?: PositionOptions) => {
+            attempt += 1;
+            if (attempt === 1) {
+              assert.equal(options?.enableHighAccuracy, true);
+              failure(unavailable);
+              return;
+            }
+            assert.equal(options?.enableHighAccuracy, false);
+            failure(timeout);
+          },
+        },
+      } });
+
+      await assert.rejects(
+        () => getPreciseCoordinates(),
+        (error: unknown) => (error as { type?: string }).type === "TIMEOUT"
+      );
+      assert.equal(attempt, 2);
+    } finally {
+      if (originalWindow === undefined) delete scope.window;
+      else scope.window = originalWindow;
+      if (navigatorDescriptor) Object.defineProperty(globalThis, "navigator", navigatorDescriptor);
+      else delete scope.navigator;
+    }
+  });
+});
+
+describe("konfigurasi database", () => {
+  it("menggunakan guard ketika DATABASE_URL tidak tersedia", () => {
+    const env = { ...process.env };
+    delete env.DATABASE_URL;
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        "--require",
+        "./scripts/tsx-windows-shim.cjs",
+        "--import",
+        "tsx",
+        "-e",
+        "import('./src/lib/db.ts')",
+      ],
+      {
+        cwd: process.cwd(),
+        encoding: "utf8",
+        env,
+      }
+    );
+
+    assert.notEqual(result.status, 0, "Import database harus gagal tanpa DATABASE_URL");
+    assert.match(result.stderr, /DATABASE_URL environment variable is required\./);
   });
 });

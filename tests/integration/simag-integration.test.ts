@@ -63,7 +63,27 @@ describe("SIMAG BMKG — Integration Testing (API, Auth, Validation & PostgreSQL
   let profilPatch: typeof import("../../src/app/api/profil/route").PATCH;
   let profilPasswordPatch: typeof import("../../src/app/api/profil/password/route").PATCH;
   let notifikasiPatch: typeof import("../../src/app/api/notifikasi/route").PATCH;
+  let notifikasiGet: typeof import("../../src/app/api/notifikasi/route").GET;
   let notifikasiCountGet: typeof import("../../src/app/api/notifikasi/count/route").GET;
+  let mobileKategoriOptions: typeof import("../../src/app/api/mobile/kategori-modul/route").OPTIONS;
+  let mobileAbsensiRiwayatGet: typeof import("../../src/app/api/mobile/absensi/riwayat/route").GET;
+  let mobileAbsensiRiwayatOptions: typeof import("../../src/app/api/mobile/absensi/riwayat/route").OPTIONS;
+  let mobileModulGet: typeof import("../../src/app/api/mobile/modul/route").GET;
+  let mobileModulOptions: typeof import("../../src/app/api/mobile/modul/route").OPTIONS;
+  let mobileMahasiswaGet: typeof import("../../src/app/api/mobile/mahasiswa/route").GET;
+  let mobilePersetujuanGet: typeof import("../../src/app/api/mobile/persetujuan/route").GET;
+  let mobileProfilePut: typeof import("../../src/app/api/mobile/profile/route").PUT;
+  let mobileProfileOptions: typeof import("../../src/app/api/mobile/profile/route").OPTIONS;
+  let vapidPublicKeyGet: typeof import("../../src/app/api/push/vapidPublic/route").GET;
+  let kategoriModulGet: typeof import("../../src/app/api/kategori-modul/route").GET;
+  let riwayatLaporanGet: typeof import("../../src/app/api/riwayat/laporan/route").GET;
+  let pembimbingMahasiswaGet: typeof import("../../src/app/api/pembimbing/mahasiswa/route").GET;
+  let adminAkunGet: typeof import("../../src/app/api/admin/akun/route").GET;
+  let adminPenempatanGet: typeof import("../../src/app/api/admin/penempatan/route").GET;
+  let adminPenempatanPatch: typeof import("../../src/app/api/admin/penempatan/route").PATCH;
+  let tempatMagangGet: typeof import("../../src/app/api/admin/tempat-magang/route").GET;
+  let tempatMagangPost: typeof import("../../src/app/api/admin/tempat-magang/route").POST;
+  let validJwtToken = "";
 
   const seededIds = {
     mahasiswaUserId: "int-user-mhs-001",
@@ -85,7 +105,22 @@ describe("SIMAG BMKG — Integration Testing (API, Auth, Validation & PostgreSQL
     prisma = dbMod.prisma;
 
     mobileLoginPost = (await import("../../src/app/api/mobile/auth/login/route")).POST;
-    mobileKategoriGet = (await import("../../src/app/api/mobile/kategori-modul/route")).GET;
+    const mobileKategoriRoute = await import("../../src/app/api/mobile/kategori-modul/route");
+    mobileKategoriGet = mobileKategoriRoute.GET;
+    mobileKategoriOptions = mobileKategoriRoute.OPTIONS;
+
+    const mobileAbsensiRiwayatRoute = await import("../../src/app/api/mobile/absensi/riwayat/route");
+    mobileAbsensiRiwayatGet = mobileAbsensiRiwayatRoute.GET;
+    mobileAbsensiRiwayatOptions = mobileAbsensiRiwayatRoute.OPTIONS;
+
+    const mobileModulRoute = await import("../../src/app/api/mobile/modul/route");
+    mobileModulGet = mobileModulRoute.GET;
+    mobileModulOptions = mobileModulRoute.OPTIONS;
+    mobileMahasiswaGet = (await import("../../src/app/api/mobile/mahasiswa/route")).GET;
+    mobilePersetujuanGet = (await import("../../src/app/api/mobile/persetujuan/route")).GET;
+    const mobileProfileRoute = await import("../../src/app/api/mobile/profile/route");
+    mobileProfilePut = mobileProfileRoute.PUT;
+    mobileProfileOptions = mobileProfileRoute.OPTIONS;
     const laporanRoute = await import("../../src/app/api/laporan-harian/route");
     laporanGet = laporanRoute.GET;
     laporanPost = laporanRoute.POST;
@@ -117,6 +152,7 @@ describe("SIMAG BMKG — Integration Testing (API, Auth, Validation & PostgreSQL
     modulByIdPut = modulIdRoute.PUT;
 
     const adminAkunRoute = await import("../../src/app/api/admin/akun/route");
+    adminAkunGet = adminAkunRoute.GET;
     adminAkunPost = adminAkunRoute.POST;
 
     const profilRoute = await import("../../src/app/api/profil/route");
@@ -127,10 +163,21 @@ describe("SIMAG BMKG — Integration Testing (API, Auth, Validation & PostgreSQL
     profilPasswordPatch = profilPasswordRoute.PATCH;
 
     const notifikasiRoute = await import("../../src/app/api/notifikasi/route");
+    notifikasiGet = notifikasiRoute.GET;
     notifikasiPatch = notifikasiRoute.PATCH;
 
     const notifikasiCountRoute = await import("../../src/app/api/notifikasi/count/route");
     notifikasiCountGet = notifikasiCountRoute.GET;
+    vapidPublicKeyGet = (await import("../../src/app/api/push/vapidPublic/route")).GET;
+    kategoriModulGet = (await import("../../src/app/api/kategori-modul/route")).GET;
+    riwayatLaporanGet = (await import("../../src/app/api/riwayat/laporan/route")).GET;
+    pembimbingMahasiswaGet = (await import("../../src/app/api/pembimbing/mahasiswa/route")).GET;
+    const adminPenempatanRoute = await import("../../src/app/api/admin/penempatan/route");
+    adminPenempatanGet = adminPenempatanRoute.GET;
+    adminPenempatanPatch = adminPenempatanRoute.PATCH;
+    const tempatMagangRoute = await import("../../src/app/api/admin/tempat-magang/route");
+    tempatMagangGet = tempatMagangRoute.GET;
+    tempatMagangPost = tempatMagangRoute.POST;
 
     // Seed isolated test records into simag_bmkg_test
     const passwordHash = await bcrypt.hash(TEST_USERS.mahasiswa.password, 10);
@@ -246,8 +293,6 @@ describe("SIMAG BMKG — Integration Testing (API, Auth, Validation & PostgreSQL
   });
 
   describe("1. Integrasi Autentikasi, JWT & Otorisasi Bearer Token", () => {
-    let validJwtToken = "";
-
     it("mengembalikan 400 ketika request login tidak menyertakan email atau password", async () => {
       const req = new Request("http://localhost:3200/api/mobile/auth/login", {
         method: "POST",
@@ -331,6 +376,133 @@ describe("SIMAG BMKG — Integration Testing (API, Auth, Validation & PostgreSQL
       assert.equal(body.success, true);
       assert.equal(Array.isArray(body.data), true);
       assert.equal(body.data[0].namaKategori, TEST_KATEGORI_MODUL.namaKategori);
+    });
+  });
+
+  describe("1.1 Integrasi endpoint mobile dan API pendukung", () => {
+    const mobileRequest = (url: string, init: RequestInit = {}) =>
+      new Request(url, {
+        ...init,
+        headers: {
+          Authorization: `Bearer ${validJwtToken}`,
+          ...(init.headers || {}),
+        },
+      });
+
+    it("menyediakan preflight CORS untuk endpoint mobile", async () => {
+      const responses = await Promise.all([
+        mobileKategoriOptions(),
+        mobileAbsensiRiwayatOptions(),
+        mobileModulOptions(),
+        mobileProfileOptions(),
+      ]);
+
+      for (const response of responses) {
+        assert.equal(response.status, 200);
+        assert.equal(response.headers.get("access-control-allow-origin"), "*");
+      }
+    });
+
+    it("membaca data mobile yang dimiliki mahasiswa dengan JWT valid", async () => {
+      const [riwayatResponse, modulResponse] = await Promise.all([
+        mobileAbsensiRiwayatGet(mobileRequest("http://localhost:3200/api/mobile/absensi/riwayat")),
+        mobileModulGet(mobileRequest("http://localhost:3200/api/mobile/modul")),
+      ]);
+
+      assert.equal(riwayatResponse.status, 200);
+      assert.equal((await riwayatResponse.json()).success, true);
+      assert.equal(modulResponse.status, 200);
+      assert.equal((await modulResponse.json()).success, true);
+    });
+
+    it("menolak akses mahasiswa ke daftar mahasiswa dan antrean persetujuan mobile", async () => {
+      const [mahasiswaResponse, persetujuanResponse] = await Promise.all([
+        mobileMahasiswaGet(mobileRequest("http://localhost:3200/api/mobile/mahasiswa")),
+        mobilePersetujuanGet(mobileRequest("http://localhost:3200/api/mobile/persetujuan")),
+      ]);
+
+      assert.equal(mahasiswaResponse.status, 403);
+      assert.equal(persetujuanResponse.status, 403);
+    });
+
+    it("memperbarui profil mobile untuk pemilik JWT dan menolak request tanpa JWT", async () => {
+      const unauthorized = await mobileProfilePut(
+        new Request("http://localhost:3200/api/mobile/profile", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nama: "Tidak boleh diubah" }),
+        })
+      );
+      assert.equal(unauthorized.status, 401);
+
+      const response = await mobileProfilePut(
+        mobileRequest("http://localhost:3200/api/mobile/profile", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nama: `${TEST_USERS.mahasiswa.nama} Teruji` }),
+        })
+      );
+      assert.equal(response.status, 200);
+      const body = await response.json();
+      assert.equal(body.success, true);
+      assert.equal(body.data.nama, `${TEST_USERS.mahasiswa.nama} Teruji`);
+    });
+
+    it("menguji endpoint web pendukung dengan pembatasan peran yang tepat", async () => {
+      setMockSession(null);
+      assert.equal((await kategoriModulGet()).status, 401);
+
+      setMockSession({
+        id: seededIds.mahasiswaUserId,
+        name: TEST_USERS.mahasiswa.nama,
+        email: TEST_USERS.mahasiswa.email,
+        role: "MAHASISWA",
+      });
+      assert.equal((await kategoriModulGet()).status, 200);
+      assert.equal((await riwayatLaporanGet()).status, 200);
+      assert.equal((await notifikasiGet()).status, 200);
+
+      setMockSession({
+        id: seededIds.dplUserId,
+        name: TEST_USERS.dpl.nama,
+        email: TEST_USERS.dpl.email,
+        role: "DPL",
+      });
+      const mahasiswa = await pembimbingMahasiswaGet();
+      assert.equal(mahasiswa.status, 200);
+      assert.equal((await mahasiswa.json()).mahasiswa.length, 1);
+    });
+
+    it("menguji endpoint administrasi dan kunci publik push sebagai SUPERADMIN", async () => {
+      setMockSession({
+        id: seededIds.adminUserId,
+        name: TEST_USERS.superadmin.nama,
+        email: TEST_USERS.superadmin.email,
+        role: "SUPERADMIN",
+      });
+
+      assert.equal((await adminAkunGet()).status, 200);
+      assert.equal((await adminPenempatanGet()).status, 200);
+      assert.equal((await tempatMagangGet(new Request("http://localhost:3200/api/admin/tempat-magang"))).status, 200);
+      assert.equal((await vapidPublicKeyGet()).status, 200);
+
+      const placementResponse = await adminPenempatanPatch(
+        new Request("http://localhost:3200/api/admin/penempatan", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: seededIds.mahasiswaUserId, dplProfileId: seededIds.dplProfileId }),
+        })
+      );
+      assert.equal(placementResponse.status, 200);
+
+      const createResponse = await tempatMagangPost(
+        new Request("http://localhost:3200/api/admin/tempat-magang", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nama: "Lokasi Uji Coverage", radiusAbsen: 100 }),
+        })
+      );
+      assert.equal(createResponse.status, 201);
     });
   });
 
